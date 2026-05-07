@@ -91,6 +91,31 @@ usage:
   #   gap_finder_audit:         50_000   # our app is small
 
 # -----------------------------------------------------------------------------
+# User profile (per-technology knowledge levels)
+# -----------------------------------------------------------------------------
+# Crew asks ONCE per technology when first encountered ("How would you describe
+# your knowledge of <tech>?") and caches the answer here. When any tech is
+# none/low, subsequent agent dispatches use Plain-English mode.
+#
+# This file (or .crew/profile.yaml — same shape under user_profile) is editable
+# directly. Use /crew profile list / set / clear to manage it.
+# -----------------------------------------------------------------------------
+# user_profile:
+#   technologies:
+#     python:
+#       level: intermediate            # none | low | intermediate | high
+#       asked_at: 2026-05-08T...
+#       contexts: [service-auth]
+#     typescript:
+#       level: high
+#       asked_at: 2026-05-08T...
+#       contexts: [frontend]
+#   flags:
+#     has_low_or_none:           false   # auto-recomputed on every set
+#     plain_english_required:    false
+#     learning_mode_recommended: null    # "detailed" when has_low_or_none
+
+# -----------------------------------------------------------------------------
 # Other integrations (managed by /crew setup-mcp)
 # -----------------------------------------------------------------------------
 mcp:

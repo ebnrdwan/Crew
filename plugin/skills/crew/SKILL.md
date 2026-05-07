@@ -29,6 +29,7 @@ Crew manages the full software development lifecycle through structured phases, 
 /crew gang-escalate <slug>    → Send a stalled Crew feature back to Gang for re-evaluation
 /crew push                    → Sync the current feature to GitHub Projects (live status card)
 /crew resume [id]             → Resume from a usage-budget checkpoint (or list)
+/crew profile [check|set|list]→ Manage user knowledge profile per technology
 ```
 
 ## Gang Integration
@@ -82,6 +83,10 @@ Available subcommands:
 
   /crew resume        Resume from a usage-budget checkpoint
                           (auto-fired by scheduled tasks; can run manually)
+
+  /crew profile       Manage user knowledge profile per technology
+                          (one-time per tech; cached; sets plain-English mode
+                           when any tech is none/low)
 
 Current project status:
   → Read .crew/current-phase.yaml if it exists, show phase + project type
@@ -141,10 +146,17 @@ resumes from the most recent checkpoint. Pass a checkpoint ID for a specific one
 `--list` to see all checkpoints, or `--discard {id}` to mark one as won't-resume.
 This is idempotent — concurrent invocations on the same checkpoint are safe.
 
+### `profile` → Load user-profile command
+Read and follow `skills/crew/commands/profile.md`
+Manages the user's per-technology knowledge profile. Subcommands: `check` (default —
+detects techs and asks about new ones), `set <tech> <level>`, `list`, `clear <tech>`,
+`reset`. When any cached tech is none/low, all subsequent agent dispatches get a
+"PLAIN ENGLISH MODE" prefix.
+
 ### Unknown subcommand
 ```
 Unknown subcommand: [arg]
 
-Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume
+Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume, profile
 Run /crew for help.
 ```

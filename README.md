@@ -88,6 +88,7 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew gang-escalate <id>` | Send a stalled Crew feature back to Gang for re-scoring |
 | `/crew push` | Sync the current feature to GitHub Projects (live status card) |
 | `/crew resume [id]` | Resume from a usage-budget checkpoint |
+| `/crew profile [check\|set\|list]` | Manage user knowledge profile per tech (one-time per tech, cached) |
 
 ---
 
@@ -182,6 +183,22 @@ usage:
 ```
 
 Full design doc: [`plugin/skills/crew/references/usage-budget.md`](plugin/skills/crew/references/usage-budget.md).
+
+---
+
+## Plain-English Mode (per-tech knowledge profile)
+
+Crew calibrates agent output to your knowledge level. The first time a technology shows up in a project, Crew asks once: **"How would you describe your knowledge of {tech}?"** — `none` / `low` / `intermediate` / `high`. The answer caches in `.crew/profile.yaml` and is never re-asked unless you `/crew profile clear {tech}`.
+
+When any tech is `none` / `low`, all later agent dispatches get a **PLAIN ENGLISH MODE** prefix: spell out acronyms, explain non-obvious choices, narrate the *why* behind framework patterns. Trades brevity for clarity — agents produce slightly longer output but it's actually useful when you're learning the stack.
+
+```bash
+/crew profile             # show current profile + run check on detected techs
+/crew profile set python low
+/crew profile list
+```
+
+Cached entries are project-scoped — different projects can have different levels for the same tech (high TS at work, low Python in a learning side-project).
 
 ---
 

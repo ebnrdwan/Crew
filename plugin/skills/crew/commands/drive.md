@@ -125,7 +125,39 @@ AskUserQuestion({
    Ask: "Continue without Crew MCP? [Yes / Setup first]"
    ```
 
-All checks passed → proceed to Step 1.
+All checks passed → proceed to Step 0.6.
+
+---
+
+### Step 0.6: User profile check (Plain-English mode gate)
+
+Before any heavy dispatch, ensure we know the user's knowledge level for each technology in play. If any tech is `none` / `low`, all later agent prompts get a "PLAIN ENGLISH MODE" prefix so explanations match the user's level.
+
+**Run detection:**
+
+```bash
+bash {plugin_root}/scripts/crew-profile-check.sh \
+  --feature-description "{feature_name + description from Step 1, if known}"
+```
+
+(In drive, Step 1 hasn't run yet, so pass an empty `--feature-description` here. After Step 1, re-run to detect any tech mentioned in the feature description; only ask about *new* techs that weren't already detected from project files.)
+
+Read the JSON output:
+
+- **`new_techs[]`** — for each, dispatch `AskUserQuestion` using the matching entry from `prompts[]` (header / question / 4 options). After the user picks, call `crew-profile-set.sh --tech {tech} --level {answer.lower()} --context "feature: {feature_id}"`.
+- **`cached_techs{}`** — already known; skip the question, use the cached level.
+- **`has_low_or_none`** + **`plain_english_required`** — if true, set `.crew/current-feature.yaml#plain_english_mode: true` so all later phases see it.
+- **`learning_mode_recommended`** — if `"detailed"`, print one-time hint to user:
+  ```
+  💡 Detected one or more technologies at low/none knowledge level.
+     Consider running `/learn detailed` to switch global learning mode
+     to detailed explanations. Crew will use plain-English mode for
+     this project regardless.
+  ```
+
+**This step is fast** — usually 0–3 questions, each one click. Once done for a project, a tech is never re-asked unless the user runs `/crew profile clear {tech}` or `/crew profile reset`.
+
+**Skip profile-check entirely** if the user invoked drive with `--no-profile-check` flag.
 
 ---
 

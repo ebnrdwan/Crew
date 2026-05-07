@@ -207,6 +207,23 @@ Write the updated `.crew/roadmap.yaml`. Confirm to user:
 
 ---
 
+### Step 2.4: User profile check (Plain-English mode gate)
+
+Before pushing the card or starting Phase 3 dispatches, ensure tech knowledge levels are known:
+
+```bash
+bash {plugin_root}/scripts/crew-profile-check.sh \
+  --feature-description "{title} — {description}"
+```
+
+For each entry in the output's `new_techs[]`, dispatch `AskUserQuestion` (using the prebuilt `prompts[]` payload), then call `crew-profile-set.sh --tech {t} --level {lvl} --context "feature: {feature_id}"`. Skip techs already in `cached_techs{}`.
+
+If `plain_english_required: true`, set `.crew/current-feature.yaml#plain_english_mode: true` so subsequent agent dispatches inject the PLAIN ENGLISH MODE prefix.
+
+Skip this step if invoked with `--no-profile-check`.
+
+---
+
 ### Step 2.5: Push card to GitHub Projects (auto-trigger)
 
 If `config.github.enabled: true` and at least one board configured, run:
