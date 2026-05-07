@@ -178,79 +178,115 @@ Then run the same validation (length, duplicate, normalize, confirm).
 
 ---
 
-### Step 1.5: Gang strategic evaluation? (Interactive)
+### Step 1.5: Use existing Gang GO Package? (Interactive)
 
-Drive can run Gang's multi-agent committee for strategic evaluation **before** Discovery + Architecture. Use this when the feature is non-trivial, the assumptions need stress-testing, or stakeholders want an evidence-backed verdict before engineering effort begins.
+Drive does **not** run Gang from inside its own pipeline. Gang is a separate plugin with its own lifecycle — the user runs Gang independently when they want strategic evaluation, then `/crew drive` picks up the resulting GO Package. This step detects whether such a package exists and offers to import it.
 
 **Skip this step entirely if invoked with `--skip-gang` flag.**
 
-**Dispatch `AskUserQuestion`:**
+#### 1.5a — Detect GO Package on disk
+
+Look for `.gang/features/{feature_id}/go-package/` (after kebab-casing). The folder must contain at least `brd.md` to count as a usable GO Package.
+
+```bash
+GANG_DIR=".gang/features/{feature_id}"
+GO_PKG="$GANG_DIR/go-package"
+
+if [[ -f "$GO_PKG/brd.md" ]]; then
+  GO_PKG_FOUND=true
+  GANG_VERDICT=$(yq -r '.advise.verdict' "$GANG_DIR/state.json")  # GO | CONDITIONAL-GO | NO-GO
+else
+  GO_PKG_FOUND=false
+fi
+```
+
+#### 1.5b — Branch on detection result
+
+**If `GO_PKG_FOUND == false`:**
+
+No package exists. Continue to Phase 1 — pm-architect handles discovery, architecture, and BRD from scratch. No question asked, no friction. Set state:
+
+```yaml
+# .crew/current-feature.yaml
+gang_used: false
+drive_phase: "gang_check_complete"
+```
+
+**If `GO_PKG_FOUND == true` AND `GANG_VERDICT == "NO-GO"`:**
+
+A Gang evaluation exists but the verdict was NO-GO. Show this to the user and ask:
 
 ```
 AskUserQuestion({
   questions: [{
-    header: "Strategic eval",
-    question: "Run Gang multi-agent committee before driving? Gang produces an evidence-backed verdict (GO/CONDITIONAL-GO/NO-GO) and a GO Package (BRD, architecture, charter, risk register, API contracts) that drive then builds from. If you skip, pm-architect handles discovery + architecture from scratch.",
+    header: "Gang said NO-GO",
+    question: "Gang evaluated this feature and returned NO-GO. Continue building anyway, abandon, or escalate back to Gang for re-scoring?",
     multiSelect: false,
     options: [
-      {label: "Yes — Investment Grade (~$8–$20)", description: "All experts, deep. Right for major bets, pivots, customer-facing features"},
-      {label: "Yes — Product Review (~$2–$5)", description: "5 core experts. Default for shipping decisions"},
-      {label: "Yes — Quick Scout (~$0.50–$1.50)", description: "PM + Architect + CEO only. Right for early filtering"},
-      {label: "No — straight to drive", description: "Skip Gang; pm-architect handles discovery directly"}
+      {label: "Build anyway (override)", description: "Ignore Gang verdict; pm-architect handles discovery from scratch"},
+      {label: "Abandon drive", description: "Halt; do not create roadmap entry or card"},
+      {label: "Escalate to Gang", description: "Run /crew gang-escalate {feature_id} — send fresh context to Gang for re-evaluation"}
     ]
   }]
 })
 ```
 
-**If user picks any "Yes" option:**
+**If `GO_PKG_FOUND == true` AND `GANG_VERDICT ∈ {GO, CONDITIONAL-GO}`:**
 
-1. **Prereq check:** verify Gang plugin installed at `~/.claude/plugins/marketplaces/gang-marketplace/`. If missing, instruct: `claude plugin marketplace add ebnrdwan/GangPlugin && claude plugin install gang`. Then halt and ask the user to re-run drive.
+A usable package exists. Ask:
 
-2. **Set Gang quality mode** in `.gang/config.yaml` to match the user's choice (`investment_grade` / `product_review` / `quick_scout`).
+```
+AskUserQuestion({
+  questions: [{
+    header: "Use Gang GO Package?",
+    question: "Found a Gang GO Package for '{feature_id}' (verdict: {verdict}, generated {age_human_readable}). Use it as the source of truth for discovery + architecture + API contracts? Drive will skip its own Phase 1 + Phase 2 and pick up at the BRD review step.",
+    multiSelect: false,
+    options: [
+      {label: "Yes — import it", description: "Run /crew gang-import {feature_id}, skip Phase 1 + 2, push card with source=gang"},
+      {label: "No — fresh discovery", description: "Ignore the package; pm-architect runs discovery + architecture from scratch (typical when scope changed since Gang ran)"}
+    ]
+  }]
+})
+```
 
-3. **Hand off to Gang.** Print the next steps to the user:
+#### 1.5c — Action on "Yes — import it"
+
+1. Run `/crew gang-import {feature_id}`. The `gang-bridge` agent:
+   - Copies the GO Package artifacts into `.crew/features/{feature_id}/` per the [overlap & handoff contract](../references/overlap-handoff-contract.md)
+   - Sets `roadmap.yaml#features[id].source.origin = "gang"` and copies CONDITIONAL-GO conditions into `source.conditions` (these gate Phase 3 implementation)
+   - Marks BRD, architecture, API contract as `imported` (drive will not regenerate them)
+
+2. Set state:
+   ```yaml
+   # .crew/current-feature.yaml
+   gang_used: true
+   gang_verdict: GO                    # or CONDITIONAL-GO
+   drive_phase: "gang_check_complete"
+   skip_phases: [1, 2]                 # drive skips these; goes to BRD review
    ```
-   Gang is ready to evaluate {feature_name}. Run these in order:
 
-     /gang init       (use feature_name "{feature_name}")
-     /gang think
-     /gang debate
-     /gang score
-     /gang advise
-     /gang deliver    (only on GO / CONDITIONAL-GO)
+3. **Jump directly to Step 1.6** (push card). Do **not** run Phase 1 (Discovery) or Phase 2 (Architecture) — they're already done by Gang.
 
-   When Gang reaches deliver (or returns NO-GO), come back here.
-   ```
+#### 1.5d — Action on "No — fresh discovery"
 
-4. **Pause drive** — write `drive_phase: gang_in_progress` to `.crew/current-feature.yaml`. Drive can be resumed later; do not block the session.
-
-5. **On user return**, dispatch `AskUserQuestion`: "Has Gang completed? [Yes — GO/CONDITIONAL-GO / Yes — NO-GO / Still running, pause]"
-
-6. **Branch on verdict:**
-
-   - **GO / CONDITIONAL-GO** → run `/crew gang-import {feature_name}` to bring the GO Package into Crew via the `gang-bridge` agent. Per the [overlap & handoff contract](../references/overlap-handoff-contract.md), drive then **skips Phase 1 (Discovery) and Phase 2 (Architecture)** entirely — Gang has produced both. Drive resumes at the **BRD review step** with the imported BRD in `seeded` mode (drive can extend it but does not regenerate). CONDITIONAL-GO conditions are copied verbatim into `roadmap.yaml#features[id].source.conditions` and gate Phase 3 implementation.
-
-   - **NO-GO** → halt drive. Print Gang's executive brief reasons. Do **not** create a roadmap entry, do **not** push a card. Suggest: "Re-run `/crew drive --skip-gang {name}` to bypass the verdict if you want to build anyway, or revise the proposal and re-run Gang."
-
-**If user picks "No":**
-
-Continue to Phase 1. pm-architect handles discovery, architecture, and BRD from scratch.
-
-**Set state:**
+Continue to Phase 1 normally. pm-architect re-derives discovery + architecture, even though a Gang package exists. This is the right choice when the package is stale or scope changed materially. Set state:
 
 ```yaml
-# .crew/current-feature.yaml
+gang_used: false
+gang_package_ignored: .gang/features/{feature_id}/   # audit trail
 drive_phase: "gang_check_complete"
-gang_used: true            # or false
-gang_quality_mode: product_review     # only if gang_used: true
-gang_verdict: CONDITIONAL-GO          # populated after Gang completes
 ```
 
 ---
 
 ### Step 1.6: Push initial card to GitHub Projects
 
-Before discovery work begins, create the live status card on the configured GitHub Projects board(s) so stakeholders can see the feature exists.
+Both branches of Step 1.5 land here:
+
+- **From 1.5c (Yes — import it):** the GO Package has been imported, `current-feature.yaml#gang_used: true` is set, source.origin = "gang"
+- **From 1.5b/1.5d (No GO Package, or fresh discovery):** standard manual feature, source.origin = "manual"
+
+Either way, create the live status card on the configured GitHub Projects board(s) so stakeholders can see the feature exists:
 
 ```
 /crew push                  # invokes commands/push.md in create mode
@@ -258,13 +294,18 @@ Before discovery work begins, create the live status card on the configured GitH
 
 This creates a draft card with status `Planned`, card type derived from `current-feature.yaml#card_type` (default: `feature`). If `config.github.enabled: false` or no boards configured, this step is silently skipped.
 
-If gang_used: true, the `gang_link_line` placeholder in the card body links back to the source Gang evaluation so the board shows the provenance.
+**If `gang_used: true`** the card body skeleton injects the `gang_link_line` placeholder pointing back to `.gang/features/{feature_id}/` + the verdict badge — so anyone reading the GitHub board can trace the build back to the source Gang evaluation.
+
+**Next step depends on Step 1.5 outcome:**
+
+- **If `gang_used: true`** → jump straight to **Phase 3 (BRD review)**. Phase 1 (Discovery) and Phase 2 (Architecture) are skipped entirely; their outputs already exist in `.crew/features/{feature_id}/` from gang-import.
+- **Otherwise** → continue to **Phase 1** below.
 
 ---
 
 ### Phase 1: Discovery & Research — pm-architect agent
 
-> **Skip Phase 1 entirely if `gang_used: true` AND `gang_verdict ∈ {GO, CONDITIONAL-GO}`** — the Gang GO Package already contains discovery + competitive analysis + assumptions ledger. Jump to Phase 3 (BRD review).
+> **Skip Phase 1 entirely if `gang_used: true`** — the Gang GO Package already contains discovery + competitive analysis + assumptions ledger. Jump to Phase 3 (BRD review).
 
 #### Step 1.0: Optional Deep Research (Interactive)
 
@@ -495,6 +536,8 @@ Discovery complete. Opportunities selected: {N}/{total}.
 ---
 
 ### Phase 2: Architecture Design — pm-architect agent
+
+> **Skip Phase 2 entirely if `gang_used: true` AND `gang_verdict ∈ {GO, CONDITIONAL-GO}`** — the Gang GO Package already contains architecture + tech-architecture.md + API contract draft. Jump to Phase 3 (BRD review) where drive treats Gang's BRD as `seeded` (extend, don't regenerate).
 
 **Dispatch:** Launch `pm-architect` agent with prompt:
 
