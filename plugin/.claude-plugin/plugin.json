@@ -1,0 +1,23 @@
+{
+  "name": "crew",
+  "description": "Crew \u2014 phase-based AI development plugin with 17 specialised engineering agents and gang-evaluation handoff. Fork of archflow with Gang multi-agent committee integration.",
+  "version": "0.1.0",
+  "author": {
+    "name": "ebnrdwan"
+  },
+  "keywords": [
+    "development-workflow",
+    "phase-based",
+    "multi-agent",
+    "gang-integration",
+    "engineering",
+    "fork-of-archflow"
+  ],
+  "category": "productivity",
+  "upstream": {
+    "name": "archflow",
+    "url": "https://github.com/azidan/archflow",
+    "version_at_fork": "1.2.3",
+    "license": "MIT"
+  }
+}
