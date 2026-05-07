@@ -883,6 +883,50 @@
   </div>
 </div>
 
+<!-- ── INSTALL ── -->
+<div class="wrap">
+  <p class="sec-label">Install &amp; Update</p>
+  <div class="install-block">
+    <pre class="install-code"><span class="install-comment"># 1. Add the marketplace</span>
+claude plugin marketplace add ebnrdwan/Crew
+
+<span class="install-comment"># 2. Install the plugin</span>
+claude plugin install crew
+
+<span class="install-comment"># 3. Run on any project</span>
+/crew onboard          <span class="install-comment"># existing codebase</span>
+/crew init             <span class="install-comment"># new project</span>
+
+<span class="install-comment"># Update to latest version</span>
+claude plugin marketplace update crew-marketplace</pre>
+  </div>
+</div>
+
+<style>
+  .install-block {
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.35);
+    overflow: hidden;
+    opacity: 0; animation: fadeSlideUp 0.55s 6.55s cubic-bezier(0.16,1,0.3,1) forwards;
+    transition: border-color 0.28s ease, box-shadow 0.30s ease;
+  }
+  .install-block:hover {
+    border-color: rgba(16,185,129,0.45);
+    box-shadow: 0 0 0 1px rgba(16,185,129,0.30), 0 0 18px 5px rgba(16,185,129,0.15);
+  }
+  .install-code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 13px; line-height: 1.7;
+    color: #6EE7B7;
+    padding: 22px 24px;
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .install-comment { color: var(--muted); font-style: normal; }
+</style>
+
 <!-- ── FOOTER ── -->
 <footer class="footer">
   <p class="footer-tagline">Phase-based execution. Specialised agents. Gang-integrated decision flow.</p>

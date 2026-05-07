@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "crew",
+  "name": "crew-marketplace",
   "version": "0.1.0",
   "description": "Crew — phase-based AI development plugin with 20 specialised agents and first-class Gang multi-agent committee integration. Fork of archflow v1.2.3.",
   "owner": {
