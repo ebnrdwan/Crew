@@ -673,6 +673,30 @@
     <div class="gang-reverse">
       Reverse flow: when scope or assumptions change mid-build, <code>/crew gang-escalate &lt;feature-id&gt;</code> sends the feature back to Gang for fresh evaluation. Gang re-scores; Crew updates the roadmap accordingly.
     </div>
+
+    <div style="margin-top:24px;padding-top:18px;border-top:1px dashed rgba(255,255,255,0.08);">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:14px;">When <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:500;">/crew drive</code> can't find a Gang package</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="padding:14px;border-radius:10px;background:rgba(15,118,110,0.06);border:1px solid rgba(15,118,110,0.30);">
+          <div style="font-size:11px;font-weight:700;color:#5EEAD4;margin-bottom:6px;">Plan via Crew Phase 1</div>
+          <div style="font-size:11px;color:#94A3B8;line-height:1.5;">product-strategist + feature-planner produce vision + roadmap entry. ~30K tokens. Recommended for non-trivial features.</div>
+        </div>
+        <div style="padding:14px;border-radius:10px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.30);">
+          <div style="font-size:11px;font-weight:700;color:#FCD34D;margin-bottom:6px;">Skip — use my inputs</div>
+          <div style="font-size:11px;color:#94A3B8;line-height:1.5;">No formal planning. Drive injects short check-ins at every dispatch boundary to keep scope tight without an upfront plan.</div>
+        </div>
+        <div style="padding:14px;border-radius:10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.30);">
+          <div style="font-size:11px;font-weight:700;color:#D8B4FE;margin-bottom:6px;">Pause for Gang</div>
+          <div style="font-size:11px;color:#94A3B8;line-height:1.5;">Halt drive cleanly. User runs <code style="font-size:10px;">/gang init→deliver</code> separately, then re-runs <code style="font-size:10px;">/crew drive</code> — auto-detects.</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:11px;color:#94A3B8;line-height:1.6;">
+        Per-zone artifact skip rules between Gang and Crew are codified in
+        <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/overlap-handoff-contract.md" style="color:#67E8F9;text-decoration:none;border-bottom:1px dotted rgba(103,232,249,0.4);">overlap-handoff-contract.md</a> ·
+        full lifecycle in
+        <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/gang-integration.md" style="color:#67E8F9;text-decoration:none;border-bottom:1px dotted rgba(103,232,249,0.4);">gang-integration.md</a>.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1008,9 +1032,44 @@
       </div>
     </div>
 
-    <p style="font-size:12px;color:#94A3B8;line-height:1.6;margin:0;">
-      Full design rationale, worked example, and rejected alternatives in
-      <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/hierarchy-mapping.md" style="color:#5EEAD4;text-decoration:none;border-bottom:1px dotted rgba(94,234,212,0.4);">references/hierarchy-mapping.md</a>.
+    <div style="margin-top:24px;padding-top:18px;border-top:1px dashed rgba(255,255,255,0.08);">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:14px;">5 card types · 1 board · skeleton per type</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+        <div style="padding:12px 10px;border-radius:10px;background:rgba(234,88,12,0.06);border:1px solid rgba(234,88,12,0.25);text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🚀</div>
+          <div style="font-size:11px;font-weight:700;color:#FED7AA;margin-bottom:3px;">Feature</div>
+          <div style="font-size:10px;color:#94A3B8;line-height:1.4;">New functionality from scratch</div>
+        </div>
+        <div style="padding:12px 10px;border-radius:10px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.25);text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">✨</div>
+          <div style="font-size:11px;font-weight:700;color:#FCD34D;margin-bottom:3px;">Enhancement</div>
+          <div style="font-size:10px;color:#94A3B8;line-height:1.4;">Improvement to existing</div>
+        </div>
+        <div style="padding:12px 10px;border-radius:10px;background:rgba(21,128,61,0.06);border:1px solid rgba(21,128,61,0.25);text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🐛</div>
+          <div style="font-size:11px;font-weight:700;color:#86EFAC;margin-bottom:3px;">Bug</div>
+          <div style="font-size:10px;color:#94A3B8;line-height:1.4;">Defect to fix</div>
+        </div>
+        <div style="padding:12px 10px;border-radius:10px;background:rgba(15,118,110,0.06);border:1px solid rgba(15,118,110,0.25);text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🛠</div>
+          <div style="font-size:11px;font-weight:700;color:#5EEAD4;margin-bottom:3px;">Infra</div>
+          <div style="font-size:10px;color:#94A3B8;line-height:1.4;">DevOps · tooling</div>
+        </div>
+        <div style="padding:12px 10px;border-radius:10px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.25);text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🔬</div>
+          <div style="font-size:11px;font-weight:700;color:#A5B4FC;margin-bottom:3px;">Spike</div>
+          <div style="font-size:10px;color:#94A3B8;line-height:1.4;">Time-boxed investigation</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:#94A3B8;line-height:1.5;">
+        Each type has its own body skeleton with type-specific fields (acceptance criteria for feature; root cause for bug; rollback plan for infra; hypothesis for spike). <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:10px;">/crew gaps</code> always pushes <strong style="color:#FCD34D;">enhancement</strong> cards (gap fixes are improvements, not new builds).
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:#94A3B8;line-height:1.6;margin:18px 0 0;">
+      Full design rationale, worked example, rejected alternatives, and card body skeletons in
+      <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/hierarchy-mapping.md" style="color:#5EEAD4;text-decoration:none;border-bottom:1px dotted rgba(94,234,212,0.4);">hierarchy-mapping.md</a> +
+      <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/card-skeletons.md" style="color:#5EEAD4;text-decoration:none;border-bottom:1px dotted rgba(94,234,212,0.4);">card-skeletons.md</a>.
     </p>
   </div>
 </div>
