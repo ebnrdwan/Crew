@@ -157,6 +157,21 @@ gh auth login --scopes project,repo
 
 The integration mirrors [Gang's `/gang push`](https://github.com/ebnrdwan/GangPlugin) but uses **continuous status updates** rather than discrete cards — Crew's nature is build-flow, so the card reflects current state instead of point-in-time snapshots. Phase → Status mapping is configurable in `.crew/config.yaml`.
 
+### Hierarchy mapping (epics / sprints / stories / tasks)
+
+Crew has 4 levels — Epic → Sprint → Story → Task — but pushes **only one card per shippable unit (story)**. Epics, sprints, and tasks are encoded as metadata, not separate cards:
+
+| Crew concept | GitHub representation |
+|---|---|
+| Epic | Custom field on the card (Single-select or Text) |
+| Sprint | Iteration field if board has one, else Single-select / Text |
+| Story | The card itself — one card per story |
+| Task | Markdown checklist inside the card body |
+
+**No duplication:** identity = `feature_id`. The cache file `.crew/github-cards.yaml` is the single source of truth. Every push (whether triggered by `/crew feature`, `/crew drive`, `/crew gang-import`, `/crew gaps`, or a phase transition) checks the cache before creating — if an entry exists, the script updates the existing card instead of making a duplicate.
+
+Full design rationale and worked examples: [`plugin/skills/crew/references/hierarchy-mapping.md`](plugin/skills/crew/references/hierarchy-mapping.md).
+
 **Requirements:** `gh` CLI authenticated with `project` and `repo` scopes.
 
 ---

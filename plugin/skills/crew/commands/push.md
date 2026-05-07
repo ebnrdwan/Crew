@@ -4,6 +4,8 @@ Creates or updates a draft card on a GitHub Projects v2 board for the current fe
 
 Mirrors Gang's `/gang push` pattern but adapted for Crew's continuous-flow model: **one live card per feature** whose Status field tracks the current phase, instead of two discrete cards per evaluation.
 
+> **Cardinality + no-duplication design:** see [`hierarchy-mapping.md`](../references/hierarchy-mapping.md) for the canonical rules — ONE card per shippable unit (story / feature / enhancement / bug / spike); epics, sprints, and tasks NEVER get their own cards. Identity = `feature_id`; the cache file `.crew/github-cards.yaml` prevents duplicates across all entry points (`/crew feature`, `/crew drive`, `/crew gang-import`, `/crew gaps`, phase auto-triggers, manual `/crew push`).
+
 ---
 
 ## Prerequisites
@@ -127,9 +129,38 @@ Fill placeholders:
 | `{endpoints_list}` | `roadmap.yaml#features[id].endpoints` |
 | `{api_contract_url}` | constructed from repo URL + `docs/api-contract.md` |
 | `{conditions}` | `roadmap.yaml#features[id].source.conditions` (only if origin = gang and verdict = CONDITIONAL-GO) |
-| `{source_origin}` | `roadmap.yaml#features[id].source.origin` (manual / gang) |
+| `{source_origin}` | `roadmap.yaml#features[id].source.origin` (manual / gang / gaps) |
 | `{gang_link_line}` | only when source.origin = gang; format: `**Gang origin:** [\`{slug}\`]({gang_url}) · verdict {verdict_badge} · imported via gang-bridge` |
 | `{phase_N_check}` | from `current-feature.yaml#phase_status[N]`: `⏳ Pending` / `🟡 In progress` / `✅ Done` / `⏭ Skipped` |
+
+**Hierarchy placeholders (NEW — see [hierarchy-mapping.md](../references/hierarchy-mapping.md)):**
+
+| Placeholder | Source |
+|---|---|
+| `{epic_name}` | `roadmap.yaml#epics[].name` for the epic that owns this story |
+| `{sprint_label}` | `roadmap.yaml#epics[].sprint` (or sprint name from a separate sprint table if your project uses one) |
+| `{points}` | `roadmap.yaml#stories[id].points` (or `–` if not estimated) |
+| `{priority}` | `roadmap.yaml#stories[id].priority` (P1 / P2 / P3) |
+| `{parent_story_id}` | `roadmap.yaml#stories[id].parent_story` (or `–` for top-level stories) |
+| `{tasks_checklist}` | from `current-feature.yaml#tasks[]` — see format below |
+
+**Tasks checklist format**:
+
+For each task in `current-feature.yaml#tasks[]`, render one line:
+
+```
+- [{x or space}] {task_id}: {title} (assigned: {agent}){completion_marker}
+```
+
+Where:
+- `[x]` if `task.done == true`, else `[ ]`
+- `{completion_marker}` is ` ✓ {YYYY-MM-DD}` if done, empty otherwise
+
+Example:
+```
+- [x] T-01: Build LoginForm component (assigned: ui-engineer) ✓ 2026-05-08
+- [ ] T-02: Add `/auth/login` endpoint (assigned: api-engineer)
+```
 
 Phase status defaults: phases before current phase = `✅ Done`, current phase = `🟡 In progress`, future phases = `⏳ Pending`.
 
@@ -156,10 +187,23 @@ bash {plugin_root}/scripts/github-project-sync.sh create \
   --owner             {board.owner} \
   --status-field-id   {board.status_field_id} \
   --status-option-id  {status_option_id} \
-  [--assignee {github_user}] \
-  [--priority {P1|P2|P3}] \
-  [--size {S|M|L|XL}]
+  [--assignee     {github_user}] \
+  [--priority     {P1|P2|P3}] \
+  [--size         {S|M|L|XL}] \
+  [--epic         {epic_name}] \
+  [--sprint       {sprint_label}] \
+  [--story-points {N}] \
+  [--source       {manual|gang|gaps}] \
+  [--parent-story {parent_feature_id}]
 ```
+
+The `--epic` / `--sprint` / `--source` / `--parent-story` / `--story-points` flags map to **custom fields** on the GitHub Projects board. The script smart-detects the field type:
+
+- If the board has an "Epic" Single-select field, the value is matched to an existing option (case-insensitive).
+- If "Epic" is a Text field, the value is written directly.
+- If the field doesn't exist on the board, the flag is silently ignored — no error, no card delay.
+
+For the full mapping rationale see [`hierarchy-mapping.md`](../references/hierarchy-mapping.md).
 
 Capture `ITEM_ID=...` and `ITEM_URL=...` from stdout.
 

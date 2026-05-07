@@ -30,6 +30,28 @@ Each skeleton has three field categories:
 ```markdown
 ---
 
+## 🏷 Hierarchy
+
+| Field | Value | GitHub field |
+|---|---|---|
+| **Epic** | {epic_name}      | Epic (single-select / text) |
+| **Sprint** | {sprint_label}  | Sprint (iteration / single-select / text) |
+| **Story Points** | {points} | Story Points (number) |
+| **Priority** | {priority}    | Priority (single-select) |
+| **Parent Story** | {parent_story_id} | Parent Story (text) |
+
+> Hierarchy values are also written to the corresponding **custom fields** on the Project card so you can group/filter by them. See [hierarchy-mapping.md](./hierarchy-mapping.md).
+
+---
+
+## ✅ Tasks
+
+{tasks_checklist}
+
+> Tasks are managed in `.crew/current-feature.yaml#tasks[]`. The checklist above mirrors that file. Tasks NEVER become their own cards — they're implementation detail of this story.
+
+---
+
 ## 🛠 Crew Phase Status
 
 **Current phase:** {phase_label}
