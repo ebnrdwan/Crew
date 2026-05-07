@@ -178,7 +178,93 @@ Then run the same validation (length, duplicate, normalize, confirm).
 
 ---
 
+### Step 1.5: Gang strategic evaluation? (Interactive)
+
+Drive can run Gang's multi-agent committee for strategic evaluation **before** Discovery + Architecture. Use this when the feature is non-trivial, the assumptions need stress-testing, or stakeholders want an evidence-backed verdict before engineering effort begins.
+
+**Skip this step entirely if invoked with `--skip-gang` flag.**
+
+**Dispatch `AskUserQuestion`:**
+
+```
+AskUserQuestion({
+  questions: [{
+    header: "Strategic eval",
+    question: "Run Gang multi-agent committee before driving? Gang produces an evidence-backed verdict (GO/CONDITIONAL-GO/NO-GO) and a GO Package (BRD, architecture, charter, risk register, API contracts) that drive then builds from. If you skip, pm-architect handles discovery + architecture from scratch.",
+    multiSelect: false,
+    options: [
+      {label: "Yes — Investment Grade (~$8–$20)", description: "All experts, deep. Right for major bets, pivots, customer-facing features"},
+      {label: "Yes — Product Review (~$2–$5)", description: "5 core experts. Default for shipping decisions"},
+      {label: "Yes — Quick Scout (~$0.50–$1.50)", description: "PM + Architect + CEO only. Right for early filtering"},
+      {label: "No — straight to drive", description: "Skip Gang; pm-architect handles discovery directly"}
+    ]
+  }]
+})
+```
+
+**If user picks any "Yes" option:**
+
+1. **Prereq check:** verify Gang plugin installed at `~/.claude/plugins/marketplaces/gang-marketplace/`. If missing, instruct: `claude plugin marketplace add ebnrdwan/GangPlugin && claude plugin install gang`. Then halt and ask the user to re-run drive.
+
+2. **Set Gang quality mode** in `.gang/config.yaml` to match the user's choice (`investment_grade` / `product_review` / `quick_scout`).
+
+3. **Hand off to Gang.** Print the next steps to the user:
+   ```
+   Gang is ready to evaluate {feature_name}. Run these in order:
+
+     /gang init       (use feature_name "{feature_name}")
+     /gang think
+     /gang debate
+     /gang score
+     /gang advise
+     /gang deliver    (only on GO / CONDITIONAL-GO)
+
+   When Gang reaches deliver (or returns NO-GO), come back here.
+   ```
+
+4. **Pause drive** — write `drive_phase: gang_in_progress` to `.crew/current-feature.yaml`. Drive can be resumed later; do not block the session.
+
+5. **On user return**, dispatch `AskUserQuestion`: "Has Gang completed? [Yes — GO/CONDITIONAL-GO / Yes — NO-GO / Still running, pause]"
+
+6. **Branch on verdict:**
+
+   - **GO / CONDITIONAL-GO** → run `/crew gang-import {feature_name}` to bring the GO Package into Crew via the `gang-bridge` agent. Per the [overlap & handoff contract](../references/overlap-handoff-contract.md), drive then **skips Phase 1 (Discovery) and Phase 2 (Architecture)** entirely — Gang has produced both. Drive resumes at the **BRD review step** with the imported BRD in `seeded` mode (drive can extend it but does not regenerate). CONDITIONAL-GO conditions are copied verbatim into `roadmap.yaml#features[id].source.conditions` and gate Phase 3 implementation.
+
+   - **NO-GO** → halt drive. Print Gang's executive brief reasons. Do **not** create a roadmap entry, do **not** push a card. Suggest: "Re-run `/crew drive --skip-gang {name}` to bypass the verdict if you want to build anyway, or revise the proposal and re-run Gang."
+
+**If user picks "No":**
+
+Continue to Phase 1. pm-architect handles discovery, architecture, and BRD from scratch.
+
+**Set state:**
+
+```yaml
+# .crew/current-feature.yaml
+drive_phase: "gang_check_complete"
+gang_used: true            # or false
+gang_quality_mode: product_review     # only if gang_used: true
+gang_verdict: CONDITIONAL-GO          # populated after Gang completes
+```
+
+---
+
+### Step 1.6: Push initial card to GitHub Projects
+
+Before discovery work begins, create the live status card on the configured GitHub Projects board(s) so stakeholders can see the feature exists.
+
+```
+/crew push                  # invokes commands/push.md in create mode
+```
+
+This creates a draft card with status `Planned`, card type derived from `current-feature.yaml#card_type` (default: `feature`). If `config.github.enabled: false` or no boards configured, this step is silently skipped.
+
+If gang_used: true, the `gang_link_line` placeholder in the card body links back to the source Gang evaluation so the board shows the provenance.
+
+---
+
 ### Phase 1: Discovery & Research — pm-architect agent
+
+> **Skip Phase 1 entirely if `gang_used: true` AND `gang_verdict ∈ {GO, CONDITIONAL-GO}`** — the Gang GO Package already contains discovery + competitive analysis + assumptions ledger. Jump to Phase 3 (BRD review).
 
 #### Step 1.0: Optional Deep Research (Interactive)
 
@@ -720,6 +806,16 @@ Feature added to roadmap:
 
 ### Phase 5: Implementation — ui-engineer + api-engineer
 
+**Push card status → Building (auto-trigger).** Before dispatching engineers, run:
+
+```
+/crew push                  # update-status mode → "Building"
+```
+
+This sets the GitHub Projects card's Status field to whichever option the board mapped to logical state `Building` (typically "In Progress"). Skipped if `config.github.enabled: false` or no boards configured.
+
+---
+
 Read `.crew/current-phase.yaml` to determine `project_type` and select agents:
 
 | Agent | fullstack | frontend_only | backend_only |
@@ -771,6 +867,16 @@ Implementation complete.
 ---
 
 ### Phase 6: QA & Acceptance — qa-engineer + pm-maestro-reviewer
+
+**Push card status → In Review (auto-trigger).** Before dispatching qa-engineer, run:
+
+```
+/crew push                  # update-status mode → "In Review"
+```
+
+The board's Status column now shows this feature awaiting QA. PM/stakeholders can see "the build is done, currently being reviewed" without asking.
+
+---
 
 **Step 6.1: Dispatch qa-engineer**
 ```
@@ -884,7 +990,15 @@ Report: docs/gap-reports/{date}-{name}-gap-report.md
    completed: {ISO date}
    ```
 
-4. **Summary:**
+4. **Push card status → Shipped (auto-trigger)** — only if `/crew deploy` has run successfully (check `current-feature.yaml#deploy_status == "success"`). Otherwise leave the card in `In Review` so the board accurately shows "merged but not yet in production":
+
+   ```
+   /crew push              # update-status → "Shipped" (only on confirmed deploy)
+   ```
+
+   If deploy hasn't run, suggest: "Run `/crew deploy` to push the card to Shipped, or update manually on the board."
+
+5. **Summary:**
    ```
    Drive Pipeline Complete!
 

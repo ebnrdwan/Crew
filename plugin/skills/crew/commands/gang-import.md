@@ -133,11 +133,32 @@ After successful import:
    ```
    This closes the loop so Gang knows which evaluations have moved into execution.
 
-### Step 7: Suggest next action
+### Step 7: Push card to GitHub Projects (auto-trigger)
+
+If `config.github.enabled: true` and at least one board configured, run:
+
+```
+/crew push                  # invokes commands/push.md in create mode
+```
+
+The pushed card has source-origin metadata set to `gang`, which causes the card body skeleton to inject the `gang_link_line` — a backlink to the source Gang evaluation so the board surfaces provenance:
+
+```markdown
+**Gang origin:** [`<slug>`](.gang/features/<slug>/) · verdict <verdict_badge> · imported via gang-bridge
+```
+
+If the same Gang evaluation already pushed cards to GitHub Projects from gang's side (`/gang push`), the Crew card is **separate** — they live as parallel cards (Gang's "evaluation result" card + Crew's "live build status" card). This is intentional: gang's cards are point-in-time evaluation snapshots; crew's card is the live build state. They serve different audiences (decision auditors vs build-progress watchers).
+
+Skipped silently if GitHub integration is disabled or no boards are configured.
+
+---
+
+### Step 8: Suggest next action
 
 ```
 ✓ Feature '<slug>' imported from Gang.
   Verdict: <verdict>  ·  Score: <score>/10  ·  Size: <size>
+  GitHub card: <created on board #N | skipped>
   
   CONDITIONAL-GO conditions still pending: <count>
   → Resolve conditions before phase-3-implementation activates.

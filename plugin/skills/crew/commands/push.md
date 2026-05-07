@@ -257,20 +257,30 @@ If `github.projects[]` is empty:
 
 ## Auto-trigger points
 
-These are the places in Crew's flow where `/crew push` is called automatically (via the SKILL.md orchestrator):
+These are the places in Crew's flow where `/crew push` is called automatically (via the SKILL.md orchestrator). Each trigger is wired into the corresponding command file — `feature.md`, `drive.md`, `gaps.md`, `gang-import.md` — at the noted step.
 
-| Trigger | Mode | Logical status |
-|---|---|---|
-| `/crew feature {name}` | create | Planned |
-| `/crew gang-import {slug}` | create | Planned |
-| Phase 1 → Phase 2 transition | update-status | Planned (unchanged; no-op) |
-| Phase 2 → Phase 2.5 transition | update-status | Planned (unchanged; no-op) |
-| Phase 2.5 → Phase 3 transition | update-status | Building |
-| Phase 3 → Phase 4 transition | update-status | In Review |
-| `/crew deploy` succeeds | update-status | Shipped |
-| Phase 4 → Phase 5 transition (without deploy) | update-status | In Review (unchanged; no-op) |
+| Trigger | Mode | Logical status | Card type | Wired in |
+|---|---|---|---|---|
+| `/crew feature {name}` | create | Planned | `feature` | `feature.md` Step 2.5 |
+| `/crew gang-import {slug}` | create | Planned | `feature` (with `gang_link_line`) | `gang-import.md` Step 7 |
+| `/crew drive` Step 1.6 (after feature input) | create | Planned | `feature` | `drive.md` Step 1.6 |
+| `/crew gaps` Phase 3 (per fix or per batch) | create | Building | `enhancement` | `gaps.md` Phase 3 step 8 |
+| `/crew drive` Phase 5 start (build) | update-status | Building | — | `drive.md` Phase 5 |
+| Phase 2.5 → Phase 3 transition (any path) | update-status | Building | — | phase orchestrator |
+| `/crew drive` Phase 6 start (QA) | update-status | In Review | — | `drive.md` Phase 6 |
+| Phase 3 → Phase 4 transition (any path) | update-status | In Review | — | phase orchestrator |
+| `/crew deploy` succeeds | update-status | Shipped | — | `deploy.md` |
+| `/crew drive` Completion (after merge + successful deploy) | update-status | Shipped | — | `drive.md` Completion step 4 |
+| Phase 4 → Phase 5 transition (without deploy) | update-status | In Review (unchanged; no-op) | — | phase orchestrator |
 
-If `config.github.auto_push: false` (default: `true`) the auto-triggers are suppressed — the user must run `/crew push` manually.
+**Card type rules:**
+- Default: `feature` (covers `/crew feature`, `/crew drive`, `/crew gang-import`)
+- `gaps`: always `enhancement` (gap fixes are improvements, not new builds)
+- Manual override: set `current-feature.yaml#card_type` to one of `feature` / `enhancement` / `bug` / `infra` / `spike` before running `/crew push`
+
+**Disabling auto-triggers:**
+
+If `config.github.auto_push: false` (default: `true`) the auto-triggers are suppressed — the user must run `/crew push` manually at each transition. Useful when the user wants to push selectively (e.g., only at major milestones, not every phase change).
 
 ---
 

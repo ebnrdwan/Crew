@@ -282,12 +282,46 @@ This phase runs inline (no agent dispatch).
    git commit -m "docs(gaps): add {N} fix stories from gap audit"
    ```
 
+8. **Push enhancement cards to GitHub Projects** (auto-trigger; skipped if `config.github.enabled: false` or no boards configured):
+
+   Gaps produce **enhancement** cards, not feature cards — they're improvements to existing functionality, not new builds. Card type is locked to `enhancement` regardless of `current-feature.yaml#card_type`.
+
+   **Card-per-fix vs card-per-batch — pick one strategy via `AskUserQuestion`:**
+
+   ```
+   AskUserQuestion({
+     questions: [{
+       header: "Card granularity",
+       question: "How to surface the {N} fix stories on GitHub Projects?",
+       multiSelect: false,
+       options: [
+         {label: "One card per fix story", description: "Each P0/P1 fix becomes its own card. Best when fixes will be assigned to different engineers"},
+         {label: "One card for the batch", description: "Single 'Gap Fixes — {date}' card listing all fixes in body. Best for small batches or when one engineer owns the cleanup"},
+         {label: "Skip — manage on roadmap only", description: "Do not push to GitHub Projects; track in .crew/roadmap.yaml only"}
+       ]
+     }]
+   })
+   ```
+
+   **Per-fix mode:** for each fix story, set:
+   ```yaml
+   # in .crew/current-feature.yaml temporarily, then loop /crew push per story
+   feature_id: {story_id}
+   card_type: enhancement
+   ```
+   Run `/crew push` once per story. Each card starts with status `Building` (not `Planned`) because gap-fixes skip Phase 1–2.5 — they go straight to implementation. Card body uses the `enhancement` skeleton from `references/card-skeletons.md`, populated from the fix story's RICE/acceptance data.
+
+   **Batch mode:** set `feature_id: gap-fixes-{date}`, `card_type: enhancement`, run `/crew push` once. Card body lists all fix stories with checkboxes; status starts at `Building`.
+
+   **Source linkage:** every card body includes the link to `docs/gap-reports/{date}-gap-report.md` so reviewers can trace back to which audit produced the fix.
+
 **>>> USER APPROVAL GATE**
 ```
 Roadmap updated:
   - Epic: {epic name}
   - Fix stories: {N} stories added
   - Branch: fix/gap-fixes-{date}
+  - GitHub cards: {pushed | skipped}
 
 → Ready to implement fixes? [Yes / Edit stories / Stop]
 ```

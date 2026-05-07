@@ -207,6 +207,20 @@ Write the updated `.crew/roadmap.yaml`. Confirm to user:
 
 ---
 
+### Step 2.5: Push card to GitHub Projects (auto-trigger)
+
+If `config.github.enabled: true` and at least one board configured, run:
+
+```
+/crew push                  # invokes commands/push.md in create mode
+```
+
+This creates a draft card with status `Planned`, card type derived from the story's nature (default: `feature`; can be overridden by setting `current-feature.yaml#card_type`). The card includes the story ID, epic, sprint, and acceptance criteria from the roadmap entry.
+
+If the user picks "Not yet" in Step 3 (just adding to roadmap, not starting dev), the card still gets created — the board reflects the backlog, not just active work. Skipped silently if GitHub integration is disabled or no boards are configured.
+
+---
+
 ### Step 3: Git Workflow Setup
 
 Ask:
