@@ -204,13 +204,73 @@ fi
 
 **If `GO_PKG_FOUND == false`:**
 
-No package exists. Continue to Phase 1 — pm-architect handles discovery, architecture, and BRD from scratch. No question asked, no friction. Set state:
+No package exists. Ask the user how to plan this feature:
+
+```
+AskUserQuestion({
+  questions: [{
+    header: "How to plan?",
+    question: "No Gang evaluation found for '{feature_id}'. How should we plan this feature before drive starts building?",
+    multiSelect: false,
+    options: [
+      {label: "Plan via Crew Phase 1 (recommended)", description: "Dispatch product-strategist + feature-planner to produce vision, personas, KPIs, and a proper roadmap entry. ~30K tokens, ~5 min. Best for non-trivial features."},
+      {label: "Skip planning — use my inputs", description: "Proceed with the description you already gave. Drive will check in frequently during build to keep the plan tight even without a formal planning step."},
+      {label: "Pause — let me run Gang first", description: "Halt drive. Run /gang init through /gang deliver yourself, then re-run /crew drive {feature_id}."}
+    ]
+  }]
+})
+```
+
+#### Action: "Plan via Crew Phase 1 (recommended)"
+
+Dispatch Crew's actual Phase 1 agents in sequence (not pm-architect — pm-architect is for drive's deeper architecture work later):
+
+1. **product-strategist** — produces `.crew/features/{feature_id}/vision.md` with: target persona, problem statement, success KPIs, non-goals.
+
+2. **feature-planner** — reads vision.md + project context, produces a roadmap entry under `.crew/roadmap.yaml#features[{feature_id}]` with: epic, sprint assignment, acceptance criteria stub, story breakdown if scope spans multiple stories.
+
+After both complete, the feature has a proper plan but **drive's later Phase 1 (Discovery via pm-architect) is still skipped** — vision + plan from Crew Phase 1 is sufficient context to enter Phase 2 (Architecture). Set:
 
 ```yaml
 # .crew/current-feature.yaml
 gang_used: false
+planning_mode: crew_phase_1
+drive_phase: "gang_check_complete"
+skip_phases: [1]                  # drive's Phase 1 is also redundant now
+```
+
+#### Action: "Skip planning — use my inputs"
+
+Proceed with whatever the user provided in Step 1. Drive will compensate for thin upfront scoping by **dispatching frequent check-in questions** at every dispatch boundary (see "Minimal-mode check-in pattern" below). Set:
+
+```yaml
+# .crew/current-feature.yaml
+gang_used: false
+planning_mode: minimal_with_checkins
 drive_phase: "gang_check_complete"
 ```
+
+#### Action: "Pause — let me run Gang first"
+
+Print to user:
+
+```
+Drive paused. Run Gang in this order, then come back:
+
+  /gang init          (use feature_name "{feature_id}")
+  /gang think
+  /gang debate
+  /gang score
+  /gang advise
+  /gang deliver
+
+Once .gang/features/{feature_id}/go-package/brd.md exists, re-run:
+  /crew drive {feature_id}
+
+Drive will detect the package automatically and offer to import it.
+```
+
+Set `drive_phase: "paused_for_gang"`, exit drive. Do not push a card yet.
 
 **If `GO_PKG_FOUND == true` AND `GANG_VERDICT == "NO-GO"`:**
 
@@ -274,8 +334,35 @@ Continue to Phase 1 normally. pm-architect re-derives discovery + architecture, 
 ```yaml
 gang_used: false
 gang_package_ignored: .gang/features/{feature_id}/   # audit trail
+planning_mode: pm_architect_full
 drive_phase: "gang_check_complete"
 ```
+
+---
+
+### Minimal-mode check-in pattern
+
+**Only active when `planning_mode: minimal_with_checkins`** (the user picked "Skip planning — use my inputs" in Step 1.5b).
+
+Without an upfront plan, the risk is building the wrong thing. Drive compensates by injecting **short check-in questions at every major dispatch boundary** so scope stays tight without a formal planning phase. Each check-in is one `AskUserQuestion` with 3–5 options; the user can always pick "Looks good, proceed" to move on with no friction.
+
+| Check-in moment | Header | What to ask |
+|---|---|---|
+| Before Phase 5 ui-engineer dispatch | "UI specifics" | Empty / loading / error states needed? Any specific component variants? Mobile-first or desktop-first? |
+| Before Phase 5 api-engineer dispatch | "API specifics" | Auth required? Pagination? Rate limiting? Specific error codes the UI expects? |
+| Before Phase 6 qa-engineer dispatch | "Edge cases" | Specific edge cases to ensure are tested? Performance budget? Accessibility scope (WCAG AA, AA+)? |
+| Before Phase 7 gap-finder dispatch | "Audit scope" | Audit a single page/flow or the whole feature? Any known gaps to skip? |
+| Before Completion (merge + deploy) | "Pre-ship" | Any last scope changes? Any dependencies that need to land first? |
+
+Each check-in must include a `"Looks good, proceed"` option as the default — silence isn't the answer; the user actively confirms or refines.
+
+**Skip the check-ins entirely if `planning_mode != minimal_with_checkins`** — when Crew Phase 1 ran (or Gang-imported), the upfront plan covers what these check-ins ask about.
+
+**Implementation note for the model:** when in minimal mode, the prompt for each phase agent should ALSO be lighter — fewer assumptions, more questions encouraged in agent output. Append to all agent prompts in this mode:
+
+> Operating in minimal-planning mode — upfront plan is thin. If your scope is unclear from the inputs, surface 2–3 specific questions before producing output rather than guessing. Better to pause and clarify than build the wrong thing.
+
+This trades a bit of agent-loop friction for build correctness, which is the whole point of the mode.
 
 ---
 
@@ -849,6 +936,32 @@ Feature added to roadmap:
 
 ### Phase 5: Implementation — ui-engineer + api-engineer
 
+**Minimal-mode check-in (only if `planning_mode: minimal_with_checkins`):**
+
+Before each engineer dispatch, ask the user once per agent:
+
+```
+AskUserQuestion({
+  questions: [{
+    header: "UI specifics",            // or "API specifics" before api-engineer
+    question: "About to dispatch ui-engineer. Any specifics that should shape the build?",
+    multiSelect: true,
+    options: [
+      {label: "Looks good, proceed", description: "Use my original description; no extra constraints"},
+      {label: "Needs empty / loading / error states", description: "Engineer should design for all three states"},
+      {label: "Mobile-first", description: "Build for phones first; desktop is bonus"},
+      {label: "Pause — let me write more spec", description: "Halt drive; I'll add details to current-feature.yaml then resume"}
+    ]
+  }]
+})
+```
+
+For api-engineer, swap to API-specific options: auth required, pagination, rate limiting, specific error codes the UI expects. See "Minimal-mode check-in pattern" in Step 1.5d for the full table.
+
+If the user selects "Pause", set `drive_phase: paused_for_spec` and exit. Do not dispatch.
+
+---
+
 **Pre-flight: usage budget check (CRITICAL — runs before every heavy dispatch).**
 
 Before dispatching either engineer, run:
@@ -954,6 +1067,28 @@ Implementation complete.
 ---
 
 ### Phase 6: QA & Acceptance — qa-engineer + pm-maestro-reviewer
+
+**Minimal-mode check-in (only if `planning_mode: minimal_with_checkins`):**
+
+```
+AskUserQuestion({
+  questions: [{
+    header: "Edge cases",
+    question: "About to dispatch qa-engineer. Any edge cases that should definitely be tested, or scope to constrain the test suite?",
+    multiSelect: true,
+    options: [
+      {label: "Looks good, proceed", description: "Standard coverage; let qa-engineer decide"},
+      {label: "Performance budget matters", description: "Add load tests / measure render time"},
+      {label: "Accessibility scope (WCAG AA)", description: "Add a11y tests for keyboard nav, screen reader, contrast"},
+      {label: "Pause — let me list edge cases", description: "Halt; I'll add cases to current-feature.yaml#edge_cases"}
+    ]
+  }]
+})
+```
+
+If user selects edge cases or scope additions, append them to `.crew/current-feature.yaml#qa_directives` and pass that field into the qa-engineer prompt.
+
+---
 
 **Push card status → In Review (auto-trigger).** Before dispatching qa-engineer, run:
 
