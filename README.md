@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Claude_Code-Plugin-10B981?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDJMMyA3djEwbDkgNSA5LTVWN2wtOS01eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" alt="Claude Code Plugin">
-  <img src="https://img.shields.io/badge/version-0.1.0-06B6D4?style=for-the-badge" alt="Version">
-  <img src="https://img.shields.io/badge/agents-20_specialised-0EA5E9?style=for-the-badge" alt="Agents">
-  <img src="https://img.shields.io/badge/phases-6-3B82F6?style=for-the-badge" alt="Phases">
-  <img src="https://img.shields.io/badge/license-MIT-6366F1?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Claude_Code-Plugin-EA580C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDJMMyA3djEwbDkgNSA5LTVWN2wtOS01eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" alt="Claude Code Plugin">
+  <img src="https://img.shields.io/badge/version-0.1.0-B45309?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/agents-20_specialised-0F766E?style=for-the-badge" alt="Agents">
+  <img src="https://img.shields.io/badge/phases-6-1D4ED8?style=for-the-badge" alt="Phases">
+  <img src="https://img.shields.io/badge/license-MIT-4338CA?style=for-the-badge" alt="License">
 </p>
 
 <h1 align="center">Crew</h1>
@@ -50,12 +50,12 @@ graph LR
     D --> E["QUALITY<br/>Review · Perf · A11y"]
     E --> F["LAUNCH<br/>Deploy · Analytics"]
 
-    style A fill:#10B981,stroke:#059669,color:#fff
-    style B fill:#14B8A6,stroke:#0D9488,color:#fff
-    style C fill:#06B6D4,stroke:#0891B2,color:#fff
-    style D fill:#0EA5E9,stroke:#0284C7,color:#fff
-    style E fill:#3B82F6,stroke:#2563EB,color:#fff
-    style F fill:#6366F1,stroke:#4F46E5,color:#fff
+    style A fill:#EA580C,stroke:#C2410C,color:#fff
+    style B fill:#B45309,stroke:#92400E,color:#fff
+    style C fill:#15803D,stroke:#166534,color:#fff
+    style D fill:#0F766E,stroke:#115E59,color:#fff
+    style E fill:#1D4ED8,stroke:#1E40AF,color:#fff
+    style F fill:#4338CA,stroke:#3730A3,color:#fff
 ```
 
 | Phase | Focus | Key Agents |
