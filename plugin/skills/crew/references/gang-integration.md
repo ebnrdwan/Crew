@@ -115,6 +115,12 @@ gh project list --owner <you>  # to confirm v1.3.x features available
 
 ---
 
+## Artifact overlap & skip rules
+
+Gang and Crew both produce BRDs, architecture docs, API contracts, personas, design tokens, and risk registers — six artifact types where the systems overlap. To prevent double work and silent drift, the **[overlap & handoff contract](./overlap-handoff-contract.md)** specifies, per zone, whether `gang-bridge` imports the artifact (Crew agent skips), seeds it (Crew agent refines), or leaves it absent (Crew agent runs from scratch). Every Crew agent in an overlap zone is expected to read `.crew/imports.yaml` before running.
+
+---
+
 ## Future integration ideas
 
 Not yet implemented — listed here so the design intent is clear:
