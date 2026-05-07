@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crew v0.1.0 — Phase-Based Development Workflow</title>
+  <meta name="description" content="A presentation deck for Crew — phase-based development workflow plugin for Claude Code with 20 specialised agents and Gang multi-agent committee integration.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:    #04080F;
+      --bg2:   #06101A;
+      --card:  rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.10);
+      --text:  #FFFFFF;
+      --muted: #94A3B8;
+      /* Crew trusty palette — 600/700 weights, narrative continuation of Gang's flow */
+      --c1: #EA580C;  /* orange-600  — Strategy (echoes Gang DELIVER) */
+      --c2: #B45309;  /* amber-700   — Design */
+      --c3: #15803D;  /* green-700   — Contract */
+      --c4: #0F766E;  /* teal-700    — Build */
+      --c5: #1D4ED8;  /* blue-700    — Quality */
+      --c6: #4338CA;  /* indigo-700  — Launch */
+      --accent: #06B6D4;
+    }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       FLUID BACKGROUND
+    ═════════════════════════════════════════════════════════════ */
+    #fluid-bg {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* Grain overlay for cinematic depth */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 160px 160px;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE ENGINE — class-toggle, stacked, fade+slide on activation
+    ═════════════════════════════════════════════════════════════ */
+    #deck {
+      position: relative; z-index: 1;
+      width: 100%; height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 72px;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(48px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-48px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .slide.active {
+      visibility: visible;
+      pointer-events: auto;
+      animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .slide.active.reverse {
+      animation: slideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .slide-inner {
+      width: 100%;
+      max-width: 1320px;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       NAVIGATION CHROME
+    ═════════════════════════════════════════════════════════════ */
+    #progress {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.04);
+      z-index: 10;
+    }
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3), var(--c4), var(--c5), var(--c6));
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 0%;
+    }
+
+    #counter {
+      position: fixed;
+      bottom: 24px; right: 32px;
+      z-index: 10;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      background: rgba(0,0,0,0.4);
+      padding: 6px 12px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    #counter strong { color: var(--text); font-weight: 600; }
+
+    #hint {
+      position: fixed;
+      bottom: 24px; left: 32px;
+      z-index: 10;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+    #hint kbd {
+      display: inline-block;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin: 0 2px;
+    }
+    body.idle #hint { opacity: 0; }
+
+    /* ═════════════════════════════════════════════════════════════
+       SHARED COMPONENTS
+    ═════════════════════════════════════════════════════════════ */
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .slide-tag-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .slide h1.headline {
+      font-size: clamp(48px, 6.5vw, 88px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      background: linear-gradient(145deg, #fff 0%, rgba(255,255,255,0.55) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .slide h2.subhead {
+      font-size: clamp(20px, 2vw, 26px);
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 880px;
+      margin-bottom: 36px;
+    }
+
+    code.kbd-code, pre.kbd-code {
+      font-family: 'Fira Code', monospace;
+      background: rgba(0,0,0,0.35);
+      color: #6EE7B7;
+      padding: 2px 9px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    pre.kbd-code {
+      display: block;
+      padding: 18px 22px;
+      font-size: 14px;
+      line-height: 1.85;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    pre.kbd-code .cmt { color: var(--muted); }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 1 — COVER
+    ═════════════════════════════════════════════════════════════ */
+    .cover {
+      text-align: center;
+    }
+    .cover .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 22px;
+      border-radius: 100px;
+      background: rgba(234,88,12,0.10);
+      border: 1px solid rgba(234,88,12,0.32);
+      font-size: 12px; font-weight: 600;
+      color: #FED7AA;
+      letter-spacing: 0.5px;
+      margin-bottom: 36px;
+    }
+    .cover h1 {
+      font-size: clamp(96px, 14vw, 200px);
+      font-weight: 900;
+      letter-spacing: -8px;
+      line-height: 0.95;
+      margin-bottom: 28px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .cover .tagline {
+      font-size: clamp(18px, 1.8vw, 22px);
+      font-weight: 400;
+      color: var(--muted);
+      max-width: 720px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    .cover .meta-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .cover .meta-row strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .cover .palette-strip {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 56px;
+    }
+    .cover .palette-strip span {
+      width: 48px; height: 4px;
+      border-radius: 2px;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 2 — THE PROBLEM
+    ═════════════════════════════════════════════════════════════ */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .problem-card {
+      padding: 28px 26px;
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .problem-card .icon {
+      font-size: 28px;
+      margin-bottom: 14px;
+      filter: grayscale(0.3);
+    }
+    .problem-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 10px;
+      color: #FED7AA;
+    }
+    .problem-card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 3 — THE IDEA (3 pillars)
+    ═════════════════════════════════════════════════════════════ */
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .pillar {
+      padding: 32px 28px;
+      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+    .pillar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .pillar:nth-child(1) { border-color: rgba(234,88,12,0.32); }
+    .pillar:nth-child(2) { border-color: rgba(15,118,110,0.32); }
+    .pillar:nth-child(3) { border-color: rgba(67,56,202,0.32); }
+    .pillar .num {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800;
+      margin-bottom: 18px;
+    }
+    .pillar:nth-child(1) .num { background: var(--c1); box-shadow: 0 0 18px rgba(234,88,12,0.55); }
+    .pillar:nth-child(2) .num { background: var(--c4); box-shadow: 0 0 18px rgba(15,118,110,0.55); }
+    .pillar:nth-child(3) .num { background: var(--c6); box-shadow: 0 0 18px rgba(67,56,202,0.55); }
+    .pillar h3 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .pillar p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 4 — 6-PHASE PIPELINE
+    ═════════════════════════════════════════════════════════════ */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .stage {
+      padding: 22px 18px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .stage::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--stage-color);
+      opacity: 0.85;
+    }
+    .stage:nth-child(1) { --stage-color: var(--c1); }
+    .stage:nth-child(2) { --stage-color: var(--c2); }
+    .stage:nth-child(3) { --stage-color: var(--c3); }
+    .stage:nth-child(4) { --stage-color: var(--c4); }
+    .stage:nth-child(5) { --stage-color: var(--c5); }
+    .stage:nth-child(6) { --stage-color: var(--c6); }
+    .stage .num {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      background: var(--stage-color);
+      margin-bottom: 14px;
+    }
+    .stage h4 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+    .stage .sub {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .pipeline-flow span.arrow {
+      opacity: 0.4;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 5 — 20 AGENTS
+    ═════════════════════════════════════════════════════════════ */
+    .agents-by-phase {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .phase-bucket {
+      padding: 22px 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+    }
+    .phase-bucket .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .phase-bucket:nth-child(1) .label { color: #FED7AA; }
+    .phase-bucket:nth-child(2) .label { color: #FCD34D; }
+    .phase-bucket:nth-child(3) .label { color: #86EFAC; }
+    .phase-bucket:nth-child(4) .label { color: #5EEAD4; }
+    .phase-bucket:nth-child(5) .label { color: #93C5FD; }
+    .phase-bucket:nth-child(6) .label { color: #A5B4FC; }
+    .phase-bucket ul {
+      list-style: none;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+    .phase-bucket ul li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .phase-bucket .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .phase-bucket:nth-child(1) .dot { background: var(--c1); }
+    .phase-bucket:nth-child(2) .dot { background: var(--c2); }
+    .phase-bucket:nth-child(3) .dot { background: var(--c3); }
+    .phase-bucket:nth-child(4) .dot { background: var(--c4); }
+    .phase-bucket:nth-child(5) .dot { background: var(--c5); }
+    .phase-bucket:nth-child(6) .dot { background: var(--c6); }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 6 — GANG INTEGRATION
+    ═════════════════════════════════════════════════════════════ */
+    .gang-flow {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr 80px 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .gang-node {
+      padding: 28px 24px;
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid;
+      text-align: center;
+    }
+    .gang-node--gang   { border-color: rgba(168,85,247,0.32); }
+    .gang-node--bridge { border-color: rgba(6,182,212,0.32);
+                         background: rgba(6,182,212,0.05); }
+    .gang-node--crew   { border-color: rgba(234,88,12,0.32); }
+    .gang-node .label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .gang-node--gang   .label { color: #C4B5FD; }
+    .gang-node--bridge .label { color: #67E8F9; }
+    .gang-node--crew   .label { color: #FED7AA; }
+    .gang-node h3 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .gang-node p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .gang-arrow {
+      align-self: center;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .gang-arrow .line {
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, rgba(168,85,247,0.55), rgba(6,182,212,0.55));
+      border-radius: 1px;
+      position: relative;
+    }
+    .gang-arrow:nth-of-type(2) .line {
+      background: linear-gradient(90deg, rgba(6,182,212,0.55), rgba(234,88,12,0.85));
+    }
+    .gang-arrow .line::after {
+      content: ''; position: absolute; right: -1px; top: -3px;
+      width: 0; height: 0;
+      border-left: 8px solid rgba(6,182,212,0.85);
+      border-top: 4.5px solid transparent;
+      border-bottom: 4.5px solid transparent;
+    }
+    .gang-arrow:nth-of-type(2) .line::after {
+      border-left-color: rgba(234,88,12,0.85);
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 7 — DRIVE FALLBACK
+    ═════════════════════════════════════════════════════════════ */
+    .fallback-tree {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .fallback-card {
+      padding: 26px 22px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid;
+    }
+    .fallback-card:nth-child(1) { border-color: rgba(15,118,110,0.32); }
+    .fallback-card:nth-child(2) { border-color: rgba(180,83,9,0.32); }
+    .fallback-card:nth-child(3) { border-color: rgba(168,85,247,0.32); }
+    .fallback-card .head {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .fallback-card:nth-child(1) .head { color: #5EEAD4; }
+    .fallback-card:nth-child(2) .head { color: #FCD34D; }
+    .fallback-card:nth-child(3) .head { color: #D8B4FE; }
+    .fallback-card h4 {
+      font-size: 17px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 10px;
+    }
+    .fallback-card p {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 8 — GITHUB PROJECTS STATUS
+    ═════════════════════════════════════════════════════════════ */
+    .gh-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .gh-status {
+      padding: 22px 16px;
+      border-radius: 14px;
+      text-align: center;
+      border: 1px solid;
+    }
+    .gh-status:nth-child(1) {
+      background: rgba(234,88,12,0.06);
+      border-color: rgba(234,88,12,0.30);
+    }
+    .gh-status:nth-child(2) {
+      background: rgba(15,118,110,0.06);
+      border-color: rgba(15,118,110,0.32);
+    }
+    .gh-status:nth-child(3) {
+      background: rgba(29,78,216,0.06);
+      border-color: rgba(29,78,216,0.32);
+    }
+    .gh-status:nth-child(4) {
+      background: rgba(67,56,202,0.06);
+      border-color: rgba(67,56,202,0.32);
+    }
+    .gh-status .phase {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .gh-status:nth-child(1) .phase { color: #FED7AA; }
+    .gh-status:nth-child(2) .phase { color: #5EEAD4; }
+    .gh-status:nth-child(3) .phase { color: #93C5FD; }
+    .gh-status:nth-child(4) .phase { color: #A5B4FC; }
+    .gh-status .name {
+      font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;
+    }
+    .gh-status .what {
+      font-size: 11px; color: var(--muted); line-height: 1.5;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 9 — HIERARCHY
+    ═════════════════════════════════════════════════════════════ */
+    .hierarchy-cmp {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 14px;
+    }
+    .hierarchy-side {
+      padding: 24px 22px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.30);
+      border: 1px solid var(--border);
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .hierarchy-side .lab {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 14px; color: var(--muted);
+    }
+    .hierarchy-rule {
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(15,118,110,0.06);
+      border: 1px solid rgba(15,118,110,0.30);
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 10 — USAGE-AWARE
+    ═════════════════════════════════════════════════════════════ */
+    .threshold-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .threshold-card {
+      padding: 26px 22px;
+      border-radius: 14px;
+      border: 1px solid;
+    }
+    .threshold-card:nth-child(1) { background: rgba(21,128,61,0.06); border-color: rgba(21,128,61,0.32); }
+    .threshold-card:nth-child(2) { background: rgba(180,83,9,0.06); border-color: rgba(180,83,9,0.32); }
+    .threshold-card:nth-child(3) { background: rgba(67,56,202,0.06); border-color: rgba(67,56,202,0.32); }
+    .threshold-card .pct {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .threshold-card:nth-child(1) .pct { color: #86EFAC; }
+    .threshold-card:nth-child(2) .pct { color: #FCD34D; }
+    .threshold-card:nth-child(3) .pct { color: #A5B4FC; }
+    .threshold-card h4 {
+      font-size: 18px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;
+    }
+    .threshold-card p {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+    .resume-flow {
+      margin-top: 22px;
+      padding: 18px 22px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.30);
+      border: 1px solid var(--border);
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #cbd5e1;
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 11 — PLAIN-ENGLISH
+    ═════════════════════════════════════════════════════════════ */
+    .levels-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .level-pill {
+      padding: 24px 16px;
+      border-radius: 14px;
+      text-align: center;
+      border: 1px solid;
+    }
+    .level-pill:nth-child(1) { background: rgba(234,88,12,0.06); border-color: rgba(234,88,12,0.32); }
+    .level-pill:nth-child(2) { background: rgba(180,83,9,0.06); border-color: rgba(180,83,9,0.32); }
+    .level-pill:nth-child(3) { background: rgba(15,118,110,0.06); border-color: rgba(15,118,110,0.32); }
+    .level-pill:nth-child(4) { background: rgba(67,56,202,0.06); border-color: rgba(67,56,202,0.32); }
+    .level-pill .name {
+      font-size: 14px; font-weight: 800; margin-bottom: 6px;
+    }
+    .level-pill:nth-child(1) .name { color: #FED7AA; }
+    .level-pill:nth-child(2) .name { color: #FCD34D; }
+    .level-pill:nth-child(3) .name { color: #5EEAD4; }
+    .level-pill:nth-child(4) .name { color: #A5B4FC; }
+    .level-pill p {
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    .pem-rule {
+      margin-top: 22px;
+      padding: 18px 22px;
+      border-radius: 12px;
+      background: rgba(234,88,12,0.05);
+      border: 1px solid rgba(234,88,12,0.25);
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+    .pem-rule strong { color: #FED7AA; }
+
+    /* ═════════════════════════════════════════════════════════════
+       SLIDE 12 — INSTALL / CTA
+    ═════════════════════════════════════════════════════════════ */
+    .cta-wrap {
+      text-align: center;
+    }
+    .cta-wrap pre.install-block {
+      display: inline-block;
+      text-align: left;
+      padding: 28px 36px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.40);
+      border: 1px solid var(--border);
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 2;
+      color: #FED7AA;
+      margin: 28px 0 36px;
+    }
+    .cta-wrap .links {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .cta-wrap a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s, opacity 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .cta-wrap a.primary {
+      background: linear-gradient(135deg, var(--c1), var(--c4));
+      color: #fff;
+    }
+    .cta-wrap a.primary:hover {
+      opacity: 0.9; transform: translateY(-2px);
+    }
+    .cta-wrap a.secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .cta-wrap a.secondary:hover {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      #fluid-bg { display: none; }
+    }
+
+    /* Print / PDF export */
+    @media print {
+      html, body { overflow: visible; height: auto; }
+      .slide {
+        position: relative;
+        visibility: visible;
+        page-break-after: always;
+        animation: none;
+        height: 100vh;
+      }
+      #progress, #counter, #hint, #fluid-bg { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="fluid-bg" aria-hidden="true"></canvas>
+
+<div id="progress"><div id="progress-fill"></div></div>
+
+<div id="deck">
+
+  <!-- ═══════════════════ SLIDE 1 — COVER ═══════════════════ -->
+  <div class="slide active" id="slide-1">
+    <div class="slide-inner cover">
+      <div class="badge">⚡ v0.1.0 &nbsp;·&nbsp; 20 Agents &nbsp;·&nbsp; Gang Integrated &nbsp;·&nbsp; Phase-Based</div>
+      <h1>Crew</h1>
+      <p class="tagline">Phase-based development workflow for Claude Code.<br/>20 specialised agents. From strategy to launch — without losing context.</p>
+      <div class="meta-row">
+        <span><strong>6</strong> phases</span>
+        <span><strong>20</strong> agents</span>
+        <span><strong>13</strong> commands</span>
+        <span><strong>Gang</strong> integrated</span>
+      </div>
+      <div class="palette-strip">
+        <span style="background: var(--c1);"></span>
+        <span style="background: var(--c2);"></span>
+        <span style="background: var(--c3);"></span>
+        <span style="background: var(--c4);"></span>
+        <span style="background: var(--c5);"></span>
+        <span style="background: var(--c6);"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 2 — THE PROBLEM ═══════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(234,88,12,0.10); border:1px solid rgba(234,88,12,0.30); color:#FED7AA;">
+        <span class="slide-tag-dot" style="background:#FED7AA;"></span>The Problem
+      </div>
+      <h1 class="headline">Building software with AI<br/>is structurally messy.</h1>
+      <h2 class="subhead">One model trying to do everything. Context lost between conversations. The same mistakes repeated across features. No clear handoff between strategy, design, and engineering.</h2>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="icon">🌀</div>
+          <h3>Context decay</h3>
+          <p>The agent forgets last week's decisions. The model that planned the feature isn't the one that built it.</p>
+        </div>
+        <div class="problem-card">
+          <div class="icon">📉</div>
+          <h3>Quality varies</h3>
+          <p>Some features ship clean, others land broken. Hard to predict which is which until QA — or production.</p>
+        </div>
+        <div class="problem-card">
+          <div class="icon">🔁</div>
+          <h3>Repeats itself</h3>
+          <p>The same bugs, the same anti-patterns, the same questions every cycle. No structural memory.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 3 — THE IDEA ═══════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>The Idea
+      </div>
+      <h1 class="headline">Three structural fixes.</h1>
+      <h2 class="subhead">Don't make one agent do everything. Don't communicate through chat. Don't let phases blur.</h2>
+      <div class="pillars">
+        <div class="pillar">
+          <div class="num">1</div>
+          <h3>Specialised agents</h3>
+          <p>20 agents, each scoped to one domain. A UX designer doesn't write backend code. An API engineer doesn't make design decisions. Each phase has its own specialists.</p>
+        </div>
+        <div class="pillar">
+          <div class="num">2</div>
+          <h3>File-based handoffs</h3>
+          <p>Agents communicate through artifacts (BRD, API contract, styled-DSL, roadmap), not chat. Context survives across conversations because it's written down, not remembered.</p>
+        </div>
+        <div class="pillar">
+          <div class="num">3</div>
+          <h3>Phase gates</h3>
+          <p>6 phases from strategy to launch. Nothing moves forward without explicit user approval. No skipped steps. No autonomous decisions on what ships.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 4 — 6-PHASE PIPELINE ═══════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>The Pipeline
+      </div>
+      <h1 class="headline">6 phases. Strategy to launch.</h1>
+      <h2 class="subhead">Each phase has dedicated agents, gates, and outputs. State persists in <code class="kbd-code">.crew/current-phase.yaml</code>.</h2>
+      <div class="pipeline">
+        <div class="stage">
+          <div class="num">1</div>
+          <h4>STRATEGY</h4>
+          <div class="sub">Vision · personas · roadmap</div>
+        </div>
+        <div class="stage">
+          <div class="num">2</div>
+          <h4>DESIGN</h4>
+          <div class="sub">Flows · DSL · hi-fi</div>
+        </div>
+        <div class="stage">
+          <div class="num">3</div>
+          <h4>CONTRACT</h4>
+          <div class="sub">API source of truth</div>
+        </div>
+        <div class="stage">
+          <div class="num">4</div>
+          <h4>BUILD</h4>
+          <div class="sub">Frontend · Backend · QA</div>
+        </div>
+        <div class="stage">
+          <div class="num">5</div>
+          <h4>QUALITY</h4>
+          <div class="sub">Review · perf · a11y</div>
+        </div>
+        <div class="stage">
+          <div class="num">6</div>
+          <h4>LAUNCH</h4>
+          <div class="sub">Deploy · analytics · i18n</div>
+        </div>
+      </div>
+      <div class="pipeline-flow">
+        <span style="color:#FED7AA;">STRATEGY</span><span class="arrow">→</span>
+        <span style="color:#FCD34D;">DESIGN</span><span class="arrow">→</span>
+        <span style="color:#86EFAC;">CONTRACT</span><span class="arrow">→</span>
+        <span style="color:#5EEAD4;">BUILD</span><span class="arrow">→</span>
+        <span style="color:#93C5FD;">QUALITY</span><span class="arrow">→</span>
+        <span style="color:#A5B4FC;">LAUNCH</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 5 — 20 AGENTS ═══════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>The Crew
+      </div>
+      <h1 class="headline">20 specialised agents.</h1>
+      <h2 class="subhead">No general-purpose fallback. Every phase has scoped specialists with clear boundaries.</h2>
+      <div class="agents-by-phase">
+        <div class="phase-bucket">
+          <div class="label">Phase 1 · Strategy</div>
+          <ul>
+            <li><span class="dot"></span>product-strategist</li>
+            <li><span class="dot"></span>feature-planner</li>
+          </ul>
+        </div>
+        <div class="phase-bucket">
+          <div class="label">Phase 2 · Design</div>
+          <ul>
+            <li><span class="dot"></span>ux-designer</li>
+            <li><span class="dot"></span>dsl-generator</li>
+            <li><span class="dot"></span>ui-animation-designer</li>
+          </ul>
+        </div>
+        <div class="phase-bucket">
+          <div class="label">Phase 2.5 · Contract</div>
+          <ul>
+            <li><span class="dot"></span>api-contract-architect</li>
+          </ul>
+        </div>
+        <div class="phase-bucket">
+          <div class="label">Phase 3 · Build</div>
+          <ul>
+            <li><span class="dot"></span>ui-engineer</li>
+            <li><span class="dot"></span>api-engineer</li>
+            <li><span class="dot"></span>qa-engineer</li>
+            <li><span class="dot"></span>pm-maestro-reviewer</li>
+          </ul>
+        </div>
+        <div class="phase-bucket">
+          <div class="label">Phase 4 · Quality</div>
+          <ul>
+            <li><span class="dot"></span>code-reviewer</li>
+            <li><span class="dot"></span>performance-optimizer</li>
+            <li><span class="dot"></span>a11y-expert</li>
+            <li><span class="dot"></span>gap-finder</li>
+          </ul>
+        </div>
+        <div class="phase-bucket">
+          <div class="label">Phase 5–6 + cross · Launch</div>
+          <ul>
+            <li><span class="dot"></span>devops-engineer</li>
+            <li><span class="dot"></span>post-launch-analyst</li>
+            <li><span class="dot"></span>i18n-engineer</li>
+            <li><span class="dot" style="background:#94A3B8;"></span>doc-writer · pm-architect</li>
+            <li><span class="dot" style="background:#A855F7;"></span>gang-bridge</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 6 — GANG INTEGRATION ═══════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.30); color:#D8B4FE;">
+        <span class="slide-tag-dot" style="background:#D8B4FE;"></span>Gang ↔ Crew
+      </div>
+      <h1 class="headline">Crew is the second half<br/>of Gang's flow.</h1>
+      <h2 class="subhead">Gang decides whether to build. Crew executes the build. The handoff is structured — no copy/paste between plugins.</h2>
+      <div class="gang-flow">
+        <div class="gang-node gang-node--gang">
+          <div class="label">Decide</div>
+          <h3>Gang</h3>
+          <p>Multi-agent committee evaluates. Produces GO Package: BRD, architecture, charter, risk register, API contracts.</p>
+        </div>
+        <div class="gang-arrow">
+          <span>GO Package</span>
+          <div class="line"></div>
+        </div>
+        <div class="gang-node gang-node--bridge">
+          <div class="label">Bridge</div>
+          <h3>gang-bridge</h3>
+          <p>Translation agent. Imports GO Packages into Crew roadmap. Escalates stalled features back for re-scoring.</p>
+        </div>
+        <div class="gang-arrow">
+          <span>Roadmap</span>
+          <div class="line"></div>
+        </div>
+        <div class="gang-node gang-node--crew">
+          <div class="label">Build</div>
+          <h3>Crew</h3>
+          <p>Phase-based execution with 20 specialised agents. Strategy → Design → Contract → Build → Quality → Launch.</p>
+        </div>
+      </div>
+      <p style="margin-top:24px; font-size:13px; color:var(--muted); text-align:center; line-height:1.7;">
+        Per-zone artifact skip rules (BRD imported, architecture seeded, etc.) live in
+        <code class="kbd-code" style="font-size:11px;">references/overlap-handoff-contract.md</code>.
+        CONDITIONAL-GO conditions block phase-3 until validated.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 7 — DRIVE FALLBACK ═══════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.30); color:#D8B4FE;">
+        <span class="slide-tag-dot" style="background:#D8B4FE;"></span>When Gang Hasn't Run
+      </div>
+      <h1 class="headline">Three explicit choices.</h1>
+      <h2 class="subhead"><code class="kbd-code">/crew drive</code> auto-detects an existing GO Package. When it doesn't find one, you choose how to plan — no silent passthrough.</h2>
+      <div class="fallback-tree">
+        <div class="fallback-card">
+          <div class="head">Recommended</div>
+          <h4>Plan via Crew Phase 1</h4>
+          <p>Dispatch product-strategist + feature-planner to produce vision, personas, KPIs, and a proper roadmap entry. ~30K tokens, ~5 min. Best for non-trivial features.</p>
+        </div>
+        <div class="fallback-card">
+          <div class="head">Fast lane</div>
+          <h4>Skip — use my inputs</h4>
+          <p>Proceed with the description you provided. Drive injects short check-in questions at every dispatch boundary so scope stays tight without an upfront plan.</p>
+        </div>
+        <div class="fallback-card">
+          <div class="head">Pause</div>
+          <h4>Run Gang first</h4>
+          <p>Halt drive cleanly. Run <code class="kbd-code" style="font-size:11px;">/gang init→deliver</code> separately, then re-run <code class="kbd-code" style="font-size:11px;">/crew drive</code> — the package is auto-detected.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 8 — GITHUB PROJECTS LIVE SYNC ═══════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>GitHub Projects · Live Sync
+      </div>
+      <h1 class="headline">One live card per feature.<br/>Status follows phase.</h1>
+      <h2 class="subhead">Crew creates the card at <code class="kbd-code">/crew feature</code> and updates the Status field as the feature advances. No discrete cards per milestone — single source of truth.</h2>
+      <div class="gh-flow">
+        <div class="gh-status">
+          <div class="phase">Phase 1–2.5</div>
+          <div class="name">Planned</div>
+          <div class="what">Strategy → Contract</div>
+        </div>
+        <div class="gh-status">
+          <div class="phase">Phase 3</div>
+          <div class="name">Building</div>
+          <div class="what">Implementation</div>
+        </div>
+        <div class="gh-status">
+          <div class="phase">Phase 4</div>
+          <div class="name">In Review</div>
+          <div class="what">QA · acceptance</div>
+        </div>
+        <div class="gh-status">
+          <div class="phase">Phase 5</div>
+          <div class="name">Shipped</div>
+          <div class="what">Deployed</div>
+        </div>
+      </div>
+      <p style="margin-top:22px; font-size:13px; color:var(--muted); text-align:center; line-height:1.7;">
+        Phase → Status mapping is configurable per project. Smart field detection: works on Single-select, Iteration, or Text Status fields without config.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 9 — HIERARCHY ═══════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(180,83,9,0.10); border:1px solid rgba(180,83,9,0.32); color:#FCD34D;">
+        <span class="slide-tag-dot" style="background:#FCD34D;"></span>Hierarchy without Duplication
+      </div>
+      <h1 class="headline">Epic. Sprint. Story. Task.<br/>One card per shippable unit.</h1>
+      <h2 class="subhead">Boards stay readable; hierarchy stays queryable. Tasks live as checklist items inside the card; epics and sprints are custom fields you group by.</h2>
+      <div class="hierarchy-cmp">
+        <div class="hierarchy-side">
+          <div class="lab">Crew model</div>
+<span style="color:#FED7AA;">Epic</span>          <span style="color:#94A3B8;">(theme)</span>
+  └─ <span style="color:#FCD34D;">Sprint</span>    <span style="color:#94A3B8;">(timebox)</span>
+       └─ <span style="color:#86EFAC;">Story</span>     <span style="color:#94A3B8;">(shippable)</span>
+            └─ <span style="color:#5EEAD4;">Task</span>   <span style="color:#94A3B8;">(impl detail)</span>
+        </div>
+        <div class="hierarchy-side">
+          <div class="lab">GitHub representation</div>
+<span style="color:#FED7AA;">Epic</span>          <span style="color:#94A3B8;">→</span> custom field
+<span style="color:#FCD34D;">Sprint</span>        <span style="color:#94A3B8;">→</span> Iteration field
+<span style="color:#86EFAC;">Story</span>         <span style="color:#94A3B8;">→</span> <span style="color:#fff;font-weight:700;">THE CARD</span>
+<span style="color:#5EEAD4;">Task</span>          <span style="color:#94A3B8;">→</span> checklist in body
+        </div>
+      </div>
+      <div class="hierarchy-rule">
+        <strong style="color:#5EEAD4;">No-duplication rule:</strong>
+        identity = <code class="kbd-code" style="font-size:11px;">feature_id</code>. The cache file <code class="kbd-code" style="font-size:11px;">.crew/github-cards.yaml</code> is the single source of truth across all 6 entry points (<code style="font-size:11px;">feature</code>, <code style="font-size:11px;">drive</code>, <code style="font-size:11px;">gang-import</code>, <code style="font-size:11px;">gaps</code>, phase auto-trigger, manual <code style="font-size:11px;">push</code>) — exists in cache → update; not in cache → create.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 10 — USAGE-AWARE ═══════════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(67,56,202,0.10); border:1px solid rgba(67,56,202,0.32); color:#A5B4FC;">
+        <span class="slide-tag-dot" style="background:#A5B4FC;"></span>Usage-Aware Checkpointing
+      </div>
+      <h1 class="headline">Stop at 98%. Resume at reset.</h1>
+      <h2 class="subhead">No more half-built features when the rate limit hits. Crew estimates each upcoming op against your budget; at 98% it stops cleanly, schedules <code class="kbd-code">/crew resume</code> for after the window resets + 10min buffer.</h2>
+      <div class="threshold-row">
+        <div class="threshold-card">
+          <div class="pct">≤ 90%</div>
+          <h4>ok</h4>
+          <p>Proceed normally. Budget is healthy. Standard dispatch.</p>
+        </div>
+        <div class="threshold-card">
+          <div class="pct">90 – 98%</div>
+          <h4>warn</h4>
+          <p>Proceed but log a warning. Consider lighter dispatch mode if available.</p>
+        </div>
+        <div class="threshold-card">
+          <div class="pct">≥ 98%</div>
+          <h4>stop</h4>
+          <p>Save checkpoint with the exact next step. Schedule resume task. Exit gracefully.</p>
+        </div>
+      </div>
+      <div class="resume-flow">
+<span style="color:var(--muted);"># Auto-flow on stop:</span>
+1. Write <span style="color:#FED7AA;">.crew/checkpoints/{ISO}-{feature}.yaml</span>
+2. Compute <span style="color:#A5B4FC;">scheduled_resume_at = session_start + 5h + 10min</span>
+3. Call <span style="color:#FED7AA;">mcp__scheduled-tasks__create_scheduled_task</span>
+4. Print pause message · exit <span style="color:#86EFAC;">cleanly</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 11 — PLAIN ENGLISH ═══════════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(234,88,12,0.10); border:1px solid rgba(234,88,12,0.32); color:#FED7AA;">
+        <span class="slide-tag-dot" style="background:#FED7AA;"></span>Plain-English Mode
+      </div>
+      <h1 class="headline">Calibrated to your level.</h1>
+      <h2 class="subhead">Asked once per technology: <em>"How would you describe your knowledge of {tech}?"</em>  Cached forever in <code class="kbd-code">.crew/profile.yaml</code>. Different levels for different projects.</h2>
+      <div class="levels-row">
+        <div class="level-pill">
+          <div class="name">None</div>
+          <p>Plain English for everything. Spell out acronyms.</p>
+        </div>
+        <div class="level-pill">
+          <div class="name">Low</div>
+          <p>Explain non-obvious choices. Narrate the why.</p>
+        </div>
+        <div class="level-pill">
+          <div class="name">Intermediate</div>
+          <p>Default agent verbosity. Standard idioms okay.</p>
+        </div>
+        <div class="level-pill">
+          <div class="name">High</div>
+          <p>Terse. Idiomatic. Expert. Skip the basics.</p>
+        </div>
+      </div>
+      <div class="pem-rule">
+        When <strong>any</strong> tech in play is none/low, all agent dispatches get a <strong>PLAIN ENGLISH MODE</strong> prefix. Trades brevity for clarity. Asked once per tech, cached per-project — a senior on TypeScript at work can be a Python beginner in their side-project. The profile follows the project, not the person.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 12 — INSTALL ═══════════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-inner cta-wrap">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>Try it now
+      </div>
+      <h1 class="headline" style="margin-bottom:28px;">Install Crew.</h1>
+      <pre class="install-block"><span style="color:var(--muted);"># 1. Add the marketplace</span>
+claude plugin marketplace add ebnrdwan/Crew
+
+<span style="color:var(--muted);"># 2. Install the plugin</span>
+claude plugin install crew
+
+<span style="color:var(--muted);"># 3. Run on any project</span>
+/crew onboard          <span style="color:var(--muted);"># existing codebase</span>
+/crew init             <span style="color:var(--muted);"># new project</span>
+
+<span style="color:var(--muted);"># Update to latest version</span>
+claude plugin marketplace update crew-marketplace</pre>
+      <div class="links">
+        <a href="https://github.com/ebnrdwan/Crew" class="primary">⚡ GitHub Repository →</a>
+        <a href="../index.html" class="secondary">📖 Full Docs</a>
+        <a href="https://github.com/ebnrdwan/GangPlugin" class="secondary">🎯 Gang Plugin</a>
+      </div>
+      <p style="margin-top:32px; font-size:11px; color:rgba(255,255,255,0.25); letter-spacing:1px;">
+        Crew Plugin v0.1.0 · Fork of archflow v1.2.3 · MIT License · Built for Claude Code
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Counter + hint -->
+<div id="counter"><strong id="cur">1</strong> / <span id="tot">12</span></div>
+<div id="hint">
+  <kbd>←</kbd> <kbd>→</kbd> navigate &nbsp;·&nbsp; <kbd>space</kbd> next &nbsp;·&nbsp; <kbd>1–9</kbd> jump &nbsp;·&nbsp; <kbd>P</kbd> print
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FLUID BACKGROUND — same shader as docs page (deep institutional)
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('fluid-bg');
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false });
+  if (!gl) return;
+
+  const VERT = `
+    attribute vec2 a_pos;
+    void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+  `;
+  const FRAG = `
+    precision mediump float;
+    uniform float  u_time;
+    uniform vec2   u_res;
+
+    float hash(vec2 p) {
+      p  = fract(p * vec2(127.1, 311.7));
+      p += dot(p, p + 17.5);
+      return fract(p.x * p.y);
+    }
+    float noise(vec2 p) {
+      vec2 i = floor(p), f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      return mix(
+        mix(hash(i),           hash(i + vec2(1,0)), f.x),
+        mix(hash(i+vec2(0,1)), hash(i + vec2(1,1)), f.x),
+        f.y);
+    }
+    float fbm(vec2 p) {
+      float  v = 0.0, a = 0.52;
+      mat2 rot = mat2( 0.8660, 0.5, -0.5, 0.8660 );
+      for (int i = 0; i < 6; i++) {
+        v += a * noise(p);
+        p  = rot * p * 2.08;
+        a *= 0.46;
+      }
+      return v;
+    }
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_res;
+      float t = u_time * 0.13;
+      vec2  p  = uv * 2.5;
+      vec2  q  = vec2(fbm(p  + t * 0.50), fbm(p  + t * 0.40 + vec2(5.2, 1.3)));
+      vec2  r  = vec2(fbm(p  + 1.9*q   + t * 0.25 + vec2(1.7, 9.2)),
+                      fbm(p  + 1.9*q   + t * 0.20 + vec2(8.3, 2.8)));
+      float f  = fbm(p + 2.4 * r);
+      vec3 col = mix(
+        mix( vec3(0.008, 0.014, 0.030),
+             vec3(0.010, 0.075, 0.085),
+             clamp(f * 2.0,        0.0, 1.0) ),
+        mix( vec3(0.012, 0.110, 0.140),
+             vec3(0.025, 0.070, 0.180),
+             clamp(f * 2.0 - 1.0,  0.0, 1.0) ),
+        clamp(f * 1.85 - 0.15, 0.0, 1.0)
+      );
+      float shimmer = fbm(p * 3.5 + r * 2.0 + t * 0.6);
+      col += vec3(0.008, 0.012, 0.022) * pow(shimmer, 3.0) * 0.85;
+      float vig = 1.0 - 0.72 * pow(length(uv - 0.5) * 1.78, 2.0);
+      col *= vig;
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+  function compile(t, s) { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes  = gl.getUniformLocation(prog, 'u_res');
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width  = Math.floor(window.innerWidth  * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+  let start = null;
+  function draw(ts) {
+    if (!start) start = ts;
+    const t = (ts - start) * 0.001;
+    gl.uniform1f(uTime, t);
+    gl.uniform2f(uRes,  canvas.width, canvas.height);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   SLIDE ENGINE — class-toggle navigation
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  const slides   = Array.from(document.querySelectorAll('.slide'));
+  const total    = slides.length;
+  const fill     = document.getElementById('progress-fill');
+  const counterE = document.getElementById('cur');
+  const totalE   = document.getElementById('tot');
+  let current    = 0;
+
+  totalE.textContent = total;
+
+  function show(i, dir = 1) {
+    if (i < 0 || i >= total || i === current) return;
+    const prev = slides[current];
+    const next = slides[i];
+    prev.classList.remove('active', 'reverse');
+    next.classList.remove('reverse');
+    if (dir < 0) next.classList.add('reverse');
+    // Force reflow so animation restarts
+    void next.offsetWidth;
+    next.classList.add('active');
+    current = i;
+    counterE.textContent = i + 1;
+    fill.style.width = ((i + 1) / total * 100) + '%';
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  // Initial state
+  fill.style.width = (1 / total * 100) + '%';
+
+  // Honour deep-link via hash
+  const initial = parseInt(location.hash.replace('#', ''), 10);
+  if (!isNaN(initial) && initial >= 1 && initial <= total) {
+    slides[0].classList.remove('active');
+    show(initial - 1);
+  }
+
+  // Keyboard nav
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown':
+        e.preventDefault(); show(current + 1, 1); break;
+      case ' ':
+        e.preventDefault();
+        show(current + (e.shiftKey ? -1 : 1), e.shiftKey ? -1 : 1); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); show(current - 1, -1); break;
+      case 'Home':
+        e.preventDefault(); show(0, -1); break;
+      case 'End':
+        e.preventDefault(); show(total - 1, 1); break;
+      case 'p': case 'P':
+        e.preventDefault(); window.print(); break;
+      default:
+        if (e.key >= '1' && e.key <= '9') {
+          const target = parseInt(e.key, 10) - 1;
+          if (target < total) show(target, target > current ? 1 : -1);
+        }
+    }
+  });
+
+  // Click to advance
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button')) return;
+    show(current + 1, 1);
+  });
+
+  // Idle hint hide
+  let idleTimer;
+  function bumpIdle() {
+    document.body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => document.body.classList.add('idle'), 4000);
+  }
+  ['mousemove', 'keydown', 'click', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, bumpIdle, { passive: true }));
+  bumpIdle();
+
+  // Touch nav (basic swipe)
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = (e.changedTouches[0].clientX - tx);
+    if (Math.abs(dx) > 60) show(current + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+  });
+})();
+</script>
+
+</body>
+</html>
