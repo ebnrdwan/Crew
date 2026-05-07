@@ -27,6 +27,7 @@ Crew manages the full software development lifecycle through structured phases, 
 /crew features --status done  → Filter features by status/epic/priority
 /crew gang-import <slug>      → Import a Gang evaluation as a Crew feature
 /crew gang-escalate <slug>    → Send a stalled Crew feature back to Gang for re-evaluation
+/crew push                    → Sync the current feature to GitHub Projects (live status card)
 ```
 
 ## Gang Integration
@@ -75,6 +76,9 @@ Available subcommands:
   /crew gang-escalate Escalate a stalled or invalidated Crew feature back to Gang
                           (for re-scoring when scope or assumptions change)
 
+  /crew push          Sync the current feature to GitHub Projects v2
+                          (live status card, updates Status field per phase)
+
 Current project status:
   → Read .crew/current-phase.yaml if it exists, show phase + project type
   → If missing: "No project onboarded. Run /crew onboard to get started."
@@ -119,10 +123,17 @@ Pass the Gang evaluation slug as the argument. Dispatches the `gang-bridge` agen
 Read and follow `skills/crew/commands/gang-escalate.md`
 Pass the Crew feature ID as the argument. Dispatches the `gang-bridge` agent.
 
+### `push` → Load GitHub Projects sync command
+Read and follow `skills/crew/commands/push.md`
+Creates a draft card on GitHub Projects v2 board(s) for the current feature, or updates
+the existing card's Status field based on the current phase. Pass `--dry-run` to preview
+without making API calls. Pass a feature ID as positional arg to push a specific feature
+instead of the current one.
+
 ### Unknown subcommand
 ```
 Unknown subcommand: [arg]
 
-Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate
+Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push
 Run /crew for help.
 ```

@@ -86,6 +86,7 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew features [filters]` | Roadmap dashboard with status, pages, acceptance progress |
 | `/crew gang-import <slug>` | Import a Gang GO Package as a Crew feature |
 | `/crew gang-escalate <id>` | Send a stalled Crew feature back to Gang for re-scoring |
+| `/crew push` | Sync the current feature to GitHub Projects (live status card) |
 
 ---
 
@@ -130,6 +131,31 @@ Both systems produce BRDs, architecture docs, API contracts, personas, design to
 Full lifecycle docs: **[gang-integration.md](plugin/skills/crew/references/gang-integration.md)**
 
 **Requirements:** Gang plugin v1.3.0+ installed at `~/.claude/plugins/marketplaces/gang-marketplace/`.
+
+---
+
+## GitHub Projects Integration
+
+Crew syncs each feature to a **live draft card** on your GitHub Projects v2 board. One card per feature; the card's **Status field** updates automatically as the feature advances through phases.
+
+```
+Phase 1–2.5 → Planned     │ Phase 3 → Building │ Phase 4 → In Review │ Phase 5 (deployed) → Shipped
+```
+
+```bash
+# 1. Authenticate with project + repo scopes
+gh auth login --scopes project,repo
+
+# 2. Discover and connect boards (interactive)
+/crew setup-mcp github
+
+# 3. Push the current feature
+/crew push
+```
+
+The integration mirrors [Gang's `/gang push`](https://github.com/ebnrdwan/GangPlugin) but uses **continuous status updates** rather than discrete cards — Crew's nature is build-flow, so the card reflects current state instead of point-in-time snapshots. Phase → Status mapping is configurable in `.crew/config.yaml`.
+
+**Requirements:** `gh` CLI authenticated with `project` and `repo` scopes.
 
 ---
 

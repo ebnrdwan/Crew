@@ -1,0 +1,68 @@
+# =============================================================================
+# Crew Project Config Template — copy to .crew/config.yaml
+# =============================================================================
+# This file is created by /crew init and managed by /crew setup-mcp.
+# Hand-edit the github section if you need a custom phase → status mapping.
+# =============================================================================
+
+schema_version: "1.0"
+
+project:
+  type: fullstack            # one of: fullstack | frontend_only | backend_only | mobile
+  name: ""                   # populated at init
+
+# -----------------------------------------------------------------------------
+# GitHub Projects v2 integration
+# -----------------------------------------------------------------------------
+# Crew creates ONE live draft card per feature on each configured board, then
+# updates the card's Status field as the feature progresses through phases.
+#
+# To configure: run /crew setup-mcp github (auto-discovers boards) or fill in
+# manually with output from `gh project list --owner <you>`.
+# -----------------------------------------------------------------------------
+
+github:
+  enabled: false             # flip to true once `gh auth login --scopes project,repo` is done
+  auto_push: true            # push automatically at /crew feature, phase transitions, /crew deploy
+  update_body_on_phase_change: false   # rewrites card body on every phase change (default off)
+  update_title_on_phase_change: false  # rewrites title to embed current phase (default off)
+
+  # ── Phase → logical status mapping ────────────────────────────────────────
+  # Crew has 6 phases. GitHub boards typically have 4 Status options.
+  # We map 6→4 here. Edit if your team prefers a different mapping
+  # (e.g., Phase 4 Quality → "QA" instead of "In Review").
+  phase_to_logical_status:
+    "1":    "Planned"        # Strategy
+    "2":    "Planned"        # Design
+    "2.25": "Planned"        # Hi-fi (optional)
+    "2.5":  "Planned"        # Contract
+    "3":    "Building"       # Implementation
+    "4":    "In Review"      # Quality
+    "5":    "Shipped"        # Launch (after /crew deploy success; otherwise In Review)
+    "6":    "Shipped"        # Enhancement
+
+  # ── Configured boards ─────────────────────────────────────────────────────
+  # Populated by /crew setup-mcp github. Each entry caches the project's
+  # Status field ID and the option ID per logical state, so updates are a
+  # single GraphQL mutation (no field re-discovery on every push).
+  projects: []
+  # Example after discovery:
+  # - project_number: 5
+  #   project_node_id: PVT_kwDO...
+  #   owner: ebnrdwan
+  #   name: "Crew Roadmap"
+  #   status_field_id: PVTSSF_lADO...
+  #   logical_state_options:
+  #     Planned:    { id: f75ad846-..., name: "Todo" }
+  #     Building:   { id: 47fc9ee4-..., name: "In Progress" }
+  #     "In Review": { id: 73a91a7e-..., name: "In Review" }
+  #     Shipped:    { id: 98765432-..., name: "Done" }
+
+# -----------------------------------------------------------------------------
+# Other integrations (managed by /crew setup-mcp)
+# -----------------------------------------------------------------------------
+mcp:
+  jira:    { enabled: false }
+  notion:  { enabled: false }
+  linear:  { enabled: false }
+  slack:   { enabled: false }

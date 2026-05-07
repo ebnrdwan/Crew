@@ -884,6 +884,46 @@
     <div class="cmd-row"><code class="cmd-code">/crew features [--status]</code><span class="cmd-desc">Roadmap dashboard, filterable</span></div>
     <div class="cmd-row cmd-gang"><code class="cmd-code">/crew gang-import &lt;slug&gt;</code><span class="cmd-desc">Import a Gang GO Package as a Crew feature</span></div>
     <div class="cmd-row cmd-gang"><code class="cmd-code">/crew gang-escalate &lt;id&gt;</code><span class="cmd-desc">Escalate a stalled Crew feature back to Gang</span></div>
+    <div class="cmd-row"><code class="cmd-code">/crew push</code><span class="cmd-desc">Sync current feature to GitHub Projects (live status card)</span></div>
+  </div>
+</div>
+
+<!-- ── GITHUB PROJECTS INTEGRATION ── -->
+<div class="wrap">
+  <p class="sec-label">GitHub Projects · Live Status Sync</p>
+  <div style="padding:32px 28px;border-radius:20px;
+              background:linear-gradient(135deg,rgba(15,118,110,0.05),rgba(29,78,216,0.04));
+              border:1px solid var(--border);">
+    <p style="font-size:14px;color:#cbd5e1;line-height:1.7;margin-bottom:18px;">
+      One <strong style="color:#fff;">live draft card</strong> per feature on your GitHub Projects v2 board.
+      Crew creates the card at <code style="background:rgba(15,118,110,0.10);color:#5EEAD4;padding:2px 7px;border-radius:5px;font-size:12px;">/crew feature</code>
+      and updates the <strong style="color:#fff;">Status field</strong> as the feature advances through phases.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;">
+      <div style="text-align:center;padding:14px 10px;border-radius:10px;background:rgba(234,88,12,0.06);border:1px solid rgba(234,88,12,0.20);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FED7AA;margin-bottom:6px;">Phase 1–2.5</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;">Planned</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:2px;">Strategy → Contract</div>
+      </div>
+      <div style="text-align:center;padding:14px 10px;border-radius:10px;background:rgba(15,118,110,0.06);border:1px solid rgba(15,118,110,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:6px;">Phase 3</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;">Building</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:2px;">Implementation</div>
+      </div>
+      <div style="text-align:center;padding:14px 10px;border-radius:10px;background:rgba(29,78,216,0.06);border:1px solid rgba(29,78,216,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93C5FD;margin-bottom:6px;">Phase 4</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;">In Review</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:2px;">QA · acceptance</div>
+      </div>
+      <div style="text-align:center;padding:14px 10px;border-radius:10px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A5B4FC;margin-bottom:6px;">Phase 5</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;">Shipped</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:2px;">Deployed</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:#94A3B8;line-height:1.6;margin:0;">
+      Differs from <a href="https://github.com/ebnrdwan/GangPlugin" style="color:#FED7AA;text-decoration:none;border-bottom:1px dotted rgba(254,215,170,0.4);">Gang</a>'s discrete-card model: Gang pushes a card after <em>advise</em> and another after <em>deliver</em>; Crew keeps one card alive across the build. Mapping is configurable in <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:2px 7px;border-radius:5px;font-size:11px;">.crew/config.yaml</code>.
+    </p>
   </div>
 </div>
 
