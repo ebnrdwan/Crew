@@ -1,10 +1,12 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "crew",
-  "description": "Crew \u2014 phase-based AI development plugin with 20 specialised agents (17 engineering + pm-architect + gap-finder + gang-bridge) and gang-evaluation handoff. Fork of archflow v1.2.3 with Gang multi-agent committee integration.",
   "version": "0.1.0",
+  "description": "Phase-based AI development plugin with 20 specialised agents and first-class Gang multi-agent committee integration. Fork of archflow v1.2.3 with /crew drive, /crew deploy, /crew gaps, /crew features, and /crew gang-import / /crew gang-escalate handoff.",
   "author": {
     "name": "ebnrdwan"
   },
+  "license": "MIT",
   "keywords": [
     "development-workflow",
     "phase-based",
@@ -12,12 +14,5 @@
     "gang-integration",
     "engineering",
     "fork-of-archflow"
-  ],
-  "category": "productivity",
-  "upstream": {
-    "name": "archflow",
-    "url": "https://github.com/azidan/archflow",
-    "version_at_fork": "1.2.3",
-    "license": "MIT"
-  }
+  ]
 }
