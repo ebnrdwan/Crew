@@ -1,6 +1,6 @@
 {
   "name": "crew",
-  "description": "Crew \u2014 phase-based AI development plugin with 17 specialised engineering agents and gang-evaluation handoff. Fork of archflow with Gang multi-agent committee integration.",
+  "description": "Crew \u2014 phase-based AI development plugin with 20 specialised agents (17 engineering + pm-architect + gap-finder + gang-bridge) and gang-evaluation handoff. Fork of archflow v1.2.3 with Gang multi-agent committee integration.",
   "version": "0.1.0",
   "author": {
     "name": "ebnrdwan"
