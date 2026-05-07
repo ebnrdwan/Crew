@@ -806,7 +806,39 @@ Feature added to roadmap:
 
 ### Phase 5: Implementation — ui-engineer + api-engineer
 
-**Push card status → Building (auto-trigger).** Before dispatching engineers, run:
+**Pre-flight: usage budget check (CRITICAL — runs before every heavy dispatch).**
+
+Before dispatching either engineer, run:
+
+```bash
+bash {plugin_root}/scripts/crew-budget-check.sh \
+  --op-type ui_engineer_full_feature \
+  --feature-id {feature_id} \
+  --phase 3 \
+  --next-step dispatch_ui_engineer
+```
+
+Then again before api-engineer with `--op-type api_engineer_full_feature --next-step dispatch_api_engineer`.
+
+**Branch on script exit code:**
+
+- **Exit 0 (`status: ok`)** → proceed normally
+- **Exit 1 (`status: warn`)** → proceed but tell the user "approaching budget ceiling — consider lighter dispatch mode if available." Continue.
+- **Exit 2 (`status: stop`)** → the script has already written a checkpoint. Read the JSON output's `instructions_for_caller` field. **Call `mcp__scheduled-tasks__create_scheduled_task`** with the supplied `prompt` (`/crew resume {id}`) and `schedule` (the ISO timestamp). Then print to user:
+  ```
+  ⏸  Crew paused at {percent_used}% session usage.
+
+  Saved checkpoint: {checkpoint_id}
+  Was about to:    {next_step}
+  Resume scheduled: {schedule_at} ({reset_window} reset + {buffer}min buffer)
+
+  Manual resume anytime with: /crew resume
+  ```
+  **Exit drive cleanly.** Do NOT proceed with the dispatch. Drive will resume from the same `next_step` when the scheduled task fires.
+
+---
+
+**Push card status → Building (auto-trigger).** If budget check passes, run:
 
 ```
 /crew push                  # update-status mode → "Building"
@@ -849,6 +881,18 @@ Use CSS variable tokens from index.css. Dark theme only.
 - Merge task branch back to feature branch
 
 **Wait for all engineers to complete.**
+
+**Post-dispatch: log token usage** for each completed engineer:
+
+```bash
+bash {plugin_root}/scripts/crew-budget-log.sh \
+  --op-type ui_engineer_full_feature \
+  --tokens {your_best_estimate_of_actual_tokens_consumed} \
+  --feature-id {feature_id} \
+  --phase 3
+```
+
+Repeat for `api_engineer_full_feature`. The log keeps `.crew/usage-state.yaml#session.estimated_tokens_used` accurate so the next budget check has fresh data. If you don't know exact tokens, the static estimate from `op_costs[op_type]` is used by default — call this script only when you have a better number.
 
 **Update** `.crew/current-feature.yaml`:
 ```yaml

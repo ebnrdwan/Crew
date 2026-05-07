@@ -87,6 +87,7 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew gang-import <slug>` | Import a Gang GO Package as a Crew feature |
 | `/crew gang-escalate <id>` | Send a stalled Crew feature back to Gang for re-scoring |
 | `/crew push` | Sync the current feature to GitHub Projects (live status card) |
+| `/crew resume [id]` | Resume from a usage-budget checkpoint |
 
 ---
 
@@ -156,6 +157,31 @@ gh auth login --scopes project,repo
 The integration mirrors [Gang's `/gang push`](https://github.com/ebnrdwan/GangPlugin) but uses **continuous status updates** rather than discrete cards — Crew's nature is build-flow, so the card reflects current state instead of point-in-time snapshots. Phase → Status mapping is configurable in `.crew/config.yaml`.
 
 **Requirements:** `gh` CLI authenticated with `project` and `repo` scopes.
+
+---
+
+## Usage-Aware Checkpointing
+
+Heavy phases (parallel agent dispatches) burn tokens fast. Crew estimates each upcoming op against your configured budget; at **98% session usage** (configurable) it stops cleanly:
+
+1. Saves a checkpoint with the exact next step that was about to run
+2. Schedules `/crew resume {id}` to fire after the rate-limit window resets + 10min buffer
+3. Exits gracefully — no half-built features
+
+When the scheduled task fires, `/crew resume` verifies the window rolled over and continues exactly where it stopped.
+
+```yaml
+# .crew/config.yaml
+usage:
+  enabled: true
+  max_tokens_per_session: 5_000_000   # MAX plan default; 1_000_000 for Pro
+  warn_threshold_percent: 90
+  stop_threshold_percent: 98
+  reset_window: "5h"                  # 5h | 1h | daily | custom:HH:MM
+  resume_buffer_minutes: 10
+```
+
+Full design doc: [`plugin/skills/crew/references/usage-budget.md`](plugin/skills/crew/references/usage-budget.md).
 
 ---
 

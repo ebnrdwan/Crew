@@ -59,6 +59,38 @@ github:
   #     Shipped:    { id: 98765432-..., name: "Done" }
 
 # -----------------------------------------------------------------------------
+# Usage-aware checkpointing & auto-resume
+# -----------------------------------------------------------------------------
+# Crew estimates the cost of each upcoming heavy dispatch and stops cleanly
+# (saving a checkpoint + scheduling a resume task) when usage approaches the
+# rate-limit ceiling. See plugin/skills/crew/references/usage-budget.md.
+#
+# Defaults below are tuned for the Anthropic MAX plan. Reduce
+# max_tokens_per_session to ~1_000_000 if you're on Pro.
+# -----------------------------------------------------------------------------
+
+usage:
+  enabled: true
+  budget_scope: session              # session | feature | both
+
+  max_tokens_per_session: 5_000_000  # MAX plan default; adjust to your tier
+  warn_threshold_percent: 90         # log a warning, keep going
+  stop_threshold_percent: 98         # checkpoint + schedule resume + exit
+
+  reset_window: "5h"                 # "5h" | "1h" | "daily" | "custom:HH:MM"
+  resume_buffer_minutes: 10          # wait this long after window reset
+
+  estimation_mode: static            # static | self_reported | hybrid
+
+  # Per-operation token estimates. Override here if your dispatches consistently
+  # cost more or less than the defaults shipped in the plugin.
+  op_costs: {}
+  # Example overrides:
+  # op_costs:
+  #   ui_engineer_full_feature: 70_000   # we have a lot of complex screens
+  #   gap_finder_audit:         50_000   # our app is small
+
+# -----------------------------------------------------------------------------
 # Other integrations (managed by /crew setup-mcp)
 # -----------------------------------------------------------------------------
 mcp:

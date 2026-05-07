@@ -28,6 +28,7 @@ Crew manages the full software development lifecycle through structured phases, 
 /crew gang-import <slug>      → Import a Gang evaluation as a Crew feature
 /crew gang-escalate <slug>    → Send a stalled Crew feature back to Gang for re-evaluation
 /crew push                    → Sync the current feature to GitHub Projects (live status card)
+/crew resume [id]             → Resume from a usage-budget checkpoint (or list)
 ```
 
 ## Gang Integration
@@ -78,6 +79,9 @@ Available subcommands:
 
   /crew push          Sync the current feature to GitHub Projects v2
                           (live status card, updates Status field per phase)
+
+  /crew resume        Resume from a usage-budget checkpoint
+                          (auto-fired by scheduled tasks; can run manually)
 
 Current project status:
   → Read .crew/current-phase.yaml if it exists, show phase + project type
@@ -130,10 +134,17 @@ the existing card's Status field based on the current phase. Pass `--dry-run` to
 without making API calls. Pass a feature ID as positional arg to push a specific feature
 instead of the current one.
 
+### `resume` → Load resume-from-checkpoint command
+Read and follow `skills/crew/commands/resume.md`
+Resumes a feature build that was paused by the usage-budget system. With no argument,
+resumes from the most recent checkpoint. Pass a checkpoint ID for a specific one,
+`--list` to see all checkpoints, or `--discard {id}` to mark one as won't-resume.
+This is idempotent — concurrent invocations on the same checkpoint are safe.
+
 ### Unknown subcommand
 ```
 Unknown subcommand: [arg]
 
-Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push
+Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume
 Run /crew for help.
 ```
