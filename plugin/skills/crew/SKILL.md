@@ -167,10 +167,13 @@ detects techs and asks about new ones), `set <tech> <level>`, `list`, `clear <te
 ### `investigate` → Load investigation command
 Read and follow `skills/crew/commands/investigate.md`
 Hypothesis-driven investigation, time-boxed. Creates a `spike` card on the GitHub
-Projects board. Read-only agent dispatch — no code changes during investigate. Ends
-with a confidence-gated recommendation: HIGH confidence suggests a specific next
-command (`/crew fix` or `/crew feature`); MEDIUM/LOW returns findings only without
-suggesting follow-up. Technical investigations only — `/gang` handles strategic ones.
+Projects board. Read-only agent dispatch — no code changes during investigate. Always
+ends with a recommended next action, calibrated to confidence: HIGH suggests a specific
+next command (`/crew fix` or `/crew feature`) with context pre-filled; MEDIUM suggests
+deepening the investigation or adding observability; LOW suggests re-running with a
+different `--type` or escalating to `/gang`. The recommendation is the first option
+(marked ★) but never the only one — user can always pick differently. Technical
+investigations only — `/gang` handles strategic ones.
 
 ### `fix` → Load bug-fix command
 Read and follow `skills/crew/commands/fix.md`

@@ -149,66 +149,113 @@ Write the summary; this is what the recommendation in Step 5 reads from.
 
 ---
 
-## Step 5 — Recommendation + next command
+## Step 5 — Always suggest next command (calibrated to confidence)
 
-Based on `confidence` from Step 4:
+**Always present a recommendation.** The recommendation is calibrated to the confidence level so MEDIUM/LOW investigations don't push the user into a wrong follow-up — but they're never left wondering what to do next.
 
-### Confidence = HIGH
+Compose the recommendation from Step 4's `confidence` + `reproduction status`:
 
-Suggest a specific next command. Dispatch `AskUserQuestion`:
+| Confidence | Reproducible? | Recommended next | Why |
+|---|---|---|---|
+| HIGH | Verified | `/crew fix` (with pre-filled context) | Root cause located, repro confirmed — fix flow can skip its own locate step |
+| HIGH | Verified | `/crew feature` (instead of fix) | If finding says "this is missing functionality" rather than "this is broken" |
+| MEDIUM | Partial | Continue investigating (extend time-box, deeper pass) | Strong hypothesis but more digging needed |
+| MEDIUM | Not reproducible | Add observability + revisit | Find better repro before acting |
+| LOW | Verified | Continue investigating with different `--type` | Rule out the wrong category (e.g. you're investigating as `bug`, it's actually `perf`) |
+| LOW | Not reproducible | Escalate to `/gang` or kill | Beyond the scope of technical investigation |
+
+### Dispatch the recommendation
 
 ```
 AskUserQuestion({
   questions: [{
     header: "Next action",
-    question: "Investigation complete with HIGH confidence. Root cause: {one-line summary}. What now?",
+    question: "Investigation complete. Confidence: {HIGH|MEDIUM|LOW}. {Root cause summary OR what's still unknown}.",
     multiSelect: false,
     options: [
-      {label: "Run /crew fix", description: "Create a bug card and dispatch the fix flow. Spike card moves to Shipped (consumed)."},
-      {label: "Run /crew feature", description: "This isn't a bug — it's missing functionality. Create a feature card."},
-      {label: "Hand back to me", description: "I'll act on this myself; just close the spike card with the findings."},
-      {label: "Continue investigating", description: "Extend the time-box; there's more to dig into."}
+      // FIRST option is always the recommendation, marked with ★
+      {label: "★ {Recommended next command}", description: "{1-line why this is recommended at this confidence level}"},
+      // Other options follow
+      {label: "Continue investigating", description: "Extend the time-box; dispatch another read-only pass with refined hypotheses"},
+      {label: "Kill investigation", description: "Mark spike as inconclusive and Shipped — don't proceed further"},
+      {label: "Hand back to me", description: "Close the spike card with the findings; I'll decide what to do"}
     ]
   }]
 })
 ```
 
-If user picks "Run /crew fix", auto-invoke `/crew fix` with the spike's findings pre-populated:
+### Compose the recommendation text
+
+Build the recommended action's `label` and `description` based on the table:
+
+**HIGH + reproducible + bug-shaped:**
+```
+label:       "★ Run /crew fix"
+description: "Root cause located at {file:line}. Repro verified. Fix flow can skip locate step."
+```
+
+**HIGH + reproducible + missing-functionality-shaped:**
+```
+label:       "★ Run /crew feature"
+description: "Finding shows missing functionality, not a bug. Feature flow is the right fit."
+```
+
+**MEDIUM + partial repro:**
+```
+label:       "★ Continue investigating"
+description: "Hypothesis is strong; need a deeper read-only pass on {area}. Extend time-box by {1h}."
+```
+
+**MEDIUM + no repro:**
+```
+label:       "★ Add observability, then revisit"
+description: "Need better repro before acting. Suggest adding {logging/metric/trace} to capture trigger."
+```
+
+**LOW + verified repro:**
+```
+label:       "★ Re-run with --type {alt}"
+description: "Current --type ruled out; symptoms suggest {alt}. Investigation type may be wrong."
+```
+
+**LOW + no repro:**
+```
+label:       "★ Escalate to /gang"
+description: "Beyond technical scope; symptoms suggest a strategic question Gang's committee can stress-test."
+```
+
+### On user selecting the recommended option
+
+If the recommendation is `/crew fix` or `/crew feature`, auto-invoke that command with pre-filled context so the user doesn't re-answer questions Step 4 already established:
 
 ```yaml
-# Pre-fill .crew/current-feature.yaml#fix block
-mode: fix
-fix:
-  source_spike: {spike_id}
-  bug_summary:  {root_cause_summary}
-  reproduction: {repro_steps_from_findings}
-  located_at:   {file:line from findings}
-  pre_planned: true   # don't re-run locate phase; we already know
+# Pre-fill .crew/current-feature.yaml#{fix|feature} block
+mode: {fix|feature}
+{fix|feature}:
+  source_spike:   {spike_id}
+  bug_summary:    {root_cause_summary}
+  reproduction:   {repro_steps_from_findings}
+  located_at:     {file:line from findings}
+  severity:       {derived from findings impact}
+  pre_planned:    true   # don't re-run locate / Phase-1 planning; already done
 ```
 
-Same pattern for "/crew feature" — pre-fill enough that feature.md doesn't re-ask what's already known.
+If the recommendation is "Continue investigating" or "Add observability, then revisit," extend `time_box_hours` by 1h, set `current-feature.yaml#investigation.refined_hypothesis: ...`, and re-dispatch Step 3 with the refined scope.
 
-### Confidence = MEDIUM or LOW
+If the recommendation is "Re-run with --type {alt}," archive the current spike, then prompt:
+> "Re-running investigation with `--type {alt}`. The previous spike findings will be archived to `.crew/investigations/.archived/{spike_id}/` for reference."
 
-**Do NOT auto-suggest a next command.** Present findings only:
+If the recommendation is "Escalate to /gang," print a hand-off message:
+> "Investigation finished with LOW confidence. To stress-test this strategically, run:
+>   `/gang init`
+> with the topic '{topic}'. Gang's committee can weigh in where Crew's read-only agents couldn't."
+> Spike status moves to `Shipped` (escalated; no further Crew action).
 
-```
-AskUserQuestion({
-  questions: [{
-    header: "Investigation complete",
-    question: "Confidence: {medium|low}. Findings ready for review. How to proceed?",
-    multiSelect: false,
-    options: [
-      {label: "Show me the summary", description: "Print the synthesized findings; I'll decide next step"},
-      {label: "Continue investigating", description: "Extend time-box and dispatch additional read-only passes"},
-      {label: "Kill investigation", description: "Mark spike as inconclusive and Shipped"},
-      {label: "Escalate to /gang", description: "This is bigger than a technical investigation — let Gang's committee weigh in"}
-    ]
-  }]
-})
-```
+### Why always suggest
 
-Quiet by default when uncertain. The user gets findings, not a wrong recommendation.
+Silence on MEDIUM/LOW confidence is what the v0.1 sketch had — it was wrong. Users running `/crew investigate` are seeking direction; getting findings without a recommended next step makes the command feel half-finished. The fix isn't to suggest `/crew fix` regardless of confidence — that's the bad pattern. The fix is to **calibrate the recommendation**: at LOW confidence the right recommendation is often "investigate differently" or "escalate," not "fix." A bad recommendation costs more than no recommendation, but no recommendation costs more than a calibrated one.
+
+The `★` marker in the option label visually identifies "this is what Crew thinks you should do" without forcing the user into it — they can always pick a non-starred option.
 
 ---
 

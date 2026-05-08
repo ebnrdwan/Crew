@@ -228,7 +228,7 @@ Two commands cover the diagnose → fix lifecycle:
 /crew fix "login crashes with apostrophe in password"  # bug is known
 ```
 
-**`/crew investigate`** is hypothesis-driven and time-boxed. Read-only agent dispatch — no code changes during investigation. Creates a `spike` card; ends with confidence-gated recommendation: HIGH confidence suggests `/crew fix` or `/crew feature`; MEDIUM/LOW returns findings without auto-suggesting follow-up. **Technical investigations only** — for strategic ones (retention drops, market shifts) use `/gang` directly; Crew does not auto-route between the two.
+**`/crew investigate`** is hypothesis-driven and time-boxed. Read-only agent dispatch — no code changes during investigation. Creates a `spike` card; **always ends with a recommended next action**, calibrated to confidence: HIGH suggests `/crew fix` or `/crew feature` with context pre-filled; MEDIUM suggests deeper investigation or observability additions; LOW suggests re-running with a different `--type` or escalating to `/gang`. The recommendation is marked ★ as the first option — never the only one. **Technical investigations only** — for strategic ones (retention drops, market shifts) use `/gang` directly; Crew does not auto-route between the two.
 
 **`/crew fix`** runs through reproduce → locate → fix → verify. Skips Phase 1 (Strategy) + Phase 2 (Design); known bugs don't need scoping. The Reproduce step writes a failing regression test that the fix must satisfy — the test is the spec; engineers fix the code, never the test. On cross-layer bugs (UI + API), the user picks sequential vs parallel dispatch (avoids two agents fighting over related files).
 
