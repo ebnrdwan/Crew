@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "crew-marketplace",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Crew — phase-based AI development plugin with 20 specialised agents and first-class Gang multi-agent committee integration. Fork of archflow v1.2.3.",
   "owner": {
     "name": "ebnrdwan"
@@ -10,7 +10,7 @@
     {
       "name": "crew",
       "description": "Phase-based AI development plugin with 20 specialised engineering agents (frontend, backend, DBA, QA, DevOps, accessibility, performance, security, plus pm-architect, gap-finder, and gang-bridge). Drives features through 6 phases — strategy, design, API architecture, implementation, quality, launch — with file-based handoffs. Adds /crew drive, /crew deploy, /crew gaps, /crew features over upstream archflow. Integrates with the Gang plugin via /crew gang-import and /crew gang-escalate so strategic GO Packages flow into engineering execution without manual copy/paste.",
-      "version": "0.1.0",
+      "version": "0.5.0",
       "author": {
         "name": "ebnrdwan"
       },

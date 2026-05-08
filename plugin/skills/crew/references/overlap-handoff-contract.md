@@ -137,7 +137,7 @@ Three failure modes worth thinking through:
 
 - **It's not security/permissions.** Gang artifacts are trusted because they came from a tool the user explicitly invoked. There's no signing/verification.
 - **It's not bidirectional.** Crew artifacts don't flow back to Gang automatically. `gang-escalate` sends a *summary* of why Crew is stuck, not the full Crew output tree.
-- **It's not version-pinned.** Today the contract assumes Gang v1.3.x and Crew v0.1.0. As either evolves, this table needs updating. Treat it as a living document, not a frozen spec.
+- **It's not version-pinned.** Today the contract assumes Gang v1.3.x and Crew v0.5.x. As either evolves, this table needs updating. Treat it as a living document, not a frozen spec.
 
 ---
 

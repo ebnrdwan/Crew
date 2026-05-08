@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "crew",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Phase-based AI development plugin with 20 specialised agents and first-class Gang multi-agent committee integration. Fork of archflow v1.2.3 with /crew drive, /crew deploy, /crew gaps, /crew features, and /crew gang-import / /crew gang-escalate handoff.",
   "author": {
     "name": "ebnrdwan"
