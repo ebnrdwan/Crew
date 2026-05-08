@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Claude_Code-Plugin-EA580C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDJMMyA3djEwbDkgNSA5LTVWN2wtOS01eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" alt="Claude Code Plugin">
-  <img src="https://img.shields.io/badge/version-0.5.0-B45309?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.5.1-B45309?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/agents-20_specialised-0F766E?style=for-the-badge" alt="Agents">
   <img src="https://img.shields.io/badge/phases-6-1D4ED8?style=for-the-badge" alt="Phases">
   <img src="https://img.shields.io/badge/license-MIT-4338CA?style=for-the-badge" alt="License">
@@ -284,7 +284,7 @@ Crew detects and adapts to project type — phase instructions, agent selection,
 
 Crew is a deliberate fork of [archflow v1.2.3](https://github.com/azidan/archflow). The fork is **strictly additive**:
 
-| Area | archflow 1.2.3 | crew 0.5.0 |
+| Area | archflow 1.2.3 | crew 0.5.1 |
 |---|---|---|
 | Slash command | `/archflow` | `/crew` |
 | State directory | `.archflow/` | `.crew/` (lets Crew + Gang coexist) |

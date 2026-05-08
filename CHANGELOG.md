@@ -7,6 +7,31 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.5.1] — 2026-05-08
+
+Adds the performance command. Total command surface is now 16.
+
+### Added — `/crew performance` command
+- **Full measure → recommend → optimise → re-measure loop in one command.** Distinct from `/crew investigate --type perf` because performance work is a complete implement-and-verify cycle, not just diagnosis. The deliverable is before/after metrics — every claim backed by a number that moved.
+- **Chrome DevTools MCP integration with graceful fallback.** When `mcp__chrome-devtools__*` tools are available, runs Lighthouse audit, perf trace + analyze_insight, network waterfall, and memory snapshots. When not, falls back to static analysis of bundle topology, dep graph, and route splits. Detection at runtime via `ToolSearch query:"select:mcp__chrome-devtools__lighthouse_audit"`.
+- **Three budget profiles** drive Web Vitals thresholds and pass/fail oracles: `strict` (LCP ≤ 1.5s · INP ≤ 100ms · bundle ≤ 170kb), `standard` (default — LCP ≤ 2.5s · INP ≤ 200ms · bundle ≤ 350kb), `relaxed` (LCP ≤ 4.0s · INP ≤ 500ms · bundle ≤ 700kb).
+- **Recommendation prioritisation** — performance-optimizer agent ranks opportunities P1/P2/P3 by impact × effort. User picks scope after measurement: implement P1 only (recommended default), P1+P2, all, multi-select review, or save report only. Flags `--no-implement` and `--auto-implement-quick-wins` override the prompt.
+- **Per-layer dispatch** — bundle/render/image work routes to ui-engineer; caching/queries/payload to api-engineer; CDN/Redis/sharding to pm-architect first for design.
+- **Re-measurement with regression guard** — Step 7 re-runs the same baseline protocol. If any tracked metric regressed beyond 10% tolerance, halts and surfaces three options: roll back the optimisation, run `/crew investigate --type perf`, or accept with explicit override. No silent regressions.
+- **Numeric-first IMPACT.md** — different shape from bug IMPACT.md. Sections: Headline numbers (before/after/delta/status table), What was done (token cost per item), What was deferred (auto-spike for follow-ups), Trade-offs accepted (explicit), Production validation metrics, Rollback per commit, Methodology / reproducibility, Sign-off checklist. Lighthouse perf score before/after as a single line above the table.
+- Deferred items (P3 architectural changes, items user excluded) auto-spawn `PERF-{run_id}-deferred` follow-up spike pushed as a Planned card.
+- Auto-trigger entries added to `push.md` for the create + update-status calls.
+
+### Updated docs
+- README — new Performance subsection in Investigations & Bug Fixes group.
+- `docs/index.html` — new feature card (⚡); new "Performance · Measure → Optimise → Re-measure" section with 4-step lifecycle row, IMPACT.md headline numbers preview alongside the 4-cell tooling matrix, regression guard callout.
+- `docs/present/index.html` — new slide 13 (Performance Loop). Cover meta updated 15 → 16 commands. Install renumbered to slide 15. Total deck is now 15 slides.
+
+### Compatibility
+- Same as 0.5.0. Chrome DevTools MCP is optional — without it the command degrades to static-analysis recommendations rather than failing.
+
+---
+
 ## [0.5.0] — 2026-05-08
 
 Substantial expansion past the initial fork. Adds GitHub Projects integration with live status sync and hierarchy mapping, usage-aware checkpointing with auto-resume, per-tech user knowledge profiling, two new commands for diagnose-and-fix lifecycle, and a structured impact reporting system.
