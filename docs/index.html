@@ -389,6 +389,7 @@
     .feature-card:nth-child(15) { animation-delay: 5.6s; }
     .feature-card:nth-child(16) { animation-delay: 5.7s; }
     .feature-card:nth-child(17) { animation-delay: 5.8s; }
+    .feature-card:nth-child(18) { animation-delay: 5.9s; }
     .feature-icon {
       width: 40px; height: 40px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -433,6 +434,7 @@
     .cmd-row:nth-child(14) { animation-delay: 6.8s; }
     .cmd-row:nth-child(15) { animation-delay: 6.9s; }
     .cmd-row:nth-child(16) { animation-delay: 7.0s; }
+    .cmd-row:nth-child(17) { animation-delay: 7.1s; }
     .cmd-code {
       font-family: 'Fira Code', 'Courier New', monospace; font-size: 13px;
       color: #FED7AA; white-space: nowrap; font-weight: 500;
@@ -935,6 +937,13 @@
         <div class="feature-desc">Reproduce → locate → fix → verify. Project-aware: scans for the same pattern across the codebase (EXACT/FUZZY/LOOSE). Writes a structured <strong>IMPACT.md</strong> covering files, interfaces, blast radius, behavior changes, monitoring.</div>
       </div>
     </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div>
+        <div class="feature-title">/crew performance</div>
+        <div class="feature-desc">Measure → recommend → optimise → re-measure. Chrome DevTools MCP for Lighthouse + perf trace + network + memory; static analysis fallback. Budget profiles (strict/standard/relaxed) drive pass/fail. Numeric IMPACT.md with before/after tables.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -958,6 +967,7 @@
     <div class="cmd-row"><code class="cmd-code">/crew profile [check|set|list]</code><span class="cmd-desc">Manage user knowledge profile per tech (one-time per tech, cached)</span></div>
     <div class="cmd-row"><code class="cmd-code">/crew investigate [topic]</code><span class="cmd-desc">Hypothesis-driven, time-boxed investigation (creates a spike card)</span></div>
     <div class="cmd-row"><code class="cmd-code">/crew fix [issue]</code><span class="cmd-desc">Reproduce → locate → fix → verify a known bug (creates a bug card)</span></div>
+    <div class="cmd-row"><code class="cmd-code">/crew performance [target]</code><span class="cmd-desc">Measure → recommend → optimise → re-measure (Chrome DevTools MCP + numeric IMPACT.md)</span></div>
   </div>
 </div>
 
@@ -1277,6 +1287,101 @@
     <div style="margin-top:22px;padding:14px 18px;border-radius:10px;background:rgba(67,56,202,0.05);border:1px solid rgba(67,56,202,0.22);font-size:12px;color:#cbd5e1;line-height:1.6;">
       <strong style="color:#A5B4FC;">The "Production monitoring" section is what makes ops trust the fix.</strong>
       A bug fix that says "watch <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:11px;">auth.login.500_rate</code> — should drop to ~0" gives the on-call engineer a binary signal post-deploy. Without that section, they're guessing what to watch. Trivial to add, dramatically changes what happens after the merge.
+    </div>
+  </div>
+</div>
+
+<!-- ── PERFORMANCE ── -->
+<div class="wrap">
+  <p class="sec-label">Performance · Measure → Optimise → Re-measure</p>
+  <div style="padding:32px 28px;border-radius:20px;
+              background:linear-gradient(135deg,rgba(15,118,110,0.05),rgba(67,56,202,0.05));
+              border:1px solid var(--border);">
+    <p style="font-size:14px;color:#cbd5e1;line-height:1.7;margin-bottom:22px;">
+      Performance work is uniquely measurable. Every optimisation can be expressed as a number that moved.
+      <code style="background:rgba(15,118,110,0.10);color:#5EEAD4;padding:2px 7px;border-radius:5px;font-size:12px;">/crew performance</code>
+      runs the full <strong style="color:#fff;">measure → recommend → optimise → re-measure</strong> loop in one command, with the before/after deltas as the deliverable.
+    </p>
+
+    <!-- 4-step lifecycle row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;">
+      <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(15,118,110,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:8px;">Step 3</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Measure baseline</div>
+        <div style="font-size:11px;color:#94A3B8;line-height:1.5;">Lighthouse · perf trace · network waterfall · memory snapshot</div>
+      </div>
+      <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(180,83,9,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FCD34D;margin-bottom:8px;">Step 4–5</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Recommend P1/P2/P3</div>
+        <div style="font-size:11px;color:#94A3B8;line-height:1.5;">performance-optimizer ranks by impact × effort; user picks scope</div>
+      </div>
+      <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(29,78,216,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93C5FD;margin-bottom:8px;">Step 6</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Implement (opt-in)</div>
+        <div style="font-size:11px;color:#94A3B8;line-height:1.5;">ui/api-engineer applies selected items · constraints enforced</div>
+      </div>
+      <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(67,56,202,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A5B4FC;margin-bottom:8px;">Step 7</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Re-measure + IMPACT.md</div>
+        <div style="font-size:11px;color:#94A3B8;line-height:1.5;">Same protocol; numeric before/after tables. Regression beyond 10% halts.</div>
+      </div>
+    </div>
+
+    <!-- IMPACT.md numeric preview + tooling matrix -->
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:22px;">
+
+      <!-- LEFT: IMPACT.md headline numbers preview -->
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:12px;">IMPACT.md headline numbers</div>
+        <div style="background:rgba(0,0,0,0.40);border:1px solid rgba(15,118,110,0.25);border-radius:10px;padding:18px 22px;font-family:'Fira Code',monospace;font-size:11.5px;line-height:1.85;color:#cbd5e1;">
+<span style="color:#5EEAD4;font-weight:700;"># Headline numbers</span>
+
+| Metric         | Before  | After   | Delta              |
+|----------------|---------|---------|--------------------|
+| <span style="color:#FED7AA;">LCP</span>            | 4200ms  | 2100ms  | <span style="color:#86EFAC;">−50%  ✓</span>          |
+| <span style="color:#FED7AA;">FCP</span>            | 2100ms  | 1500ms  | <span style="color:#86EFAC;">−29%  ✓</span>          |
+| <span style="color:#FED7AA;">INP</span>            | 180ms   | 192ms   | <span style="color:#FCD34D;">+7%  ⚠ within tol</span>  |
+| <span style="color:#FED7AA;">CLS</span>            | 0.04    | 0.04    | 0 ·                |
+| <span style="color:#FED7AA;">Bundle JS</span>      | 540kb   | 320kb   | <span style="color:#86EFAC;">−41%  ✓</span>          |
+
+<span style="color:var(--muted);">Lighthouse perf score:</span> <span style="color:#FED7AA;">47</span> → <span style="color:#86EFAC;">89  (+42)</span>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:#94A3B8;line-height:1.6;">
+          Numeric-first by design — different shape from bug IMPACT.md. Production validation, rollback per commit, methodology, and sign-off checklist follow.
+        </div>
+      </div>
+
+      <!-- RIGHT: tooling matrix -->
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A5B4FC;margin-bottom:12px;">Tooling matrix</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:11px 14px;border-radius:8px;background:rgba(15,118,110,0.06);border:1px solid rgba(15,118,110,0.25);">
+            <div style="font-size:11px;font-weight:700;color:#5EEAD4;margin-bottom:3px;">Frontend · Chrome DevTools MCP</div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">lighthouse_audit · performance_start_trace · list_network_requests · take_memory_snapshot</div>
+          </div>
+          <div style="padding:11px 14px;border-radius:8px;background:rgba(29,78,216,0.06);border:1px solid rgba(29,78,216,0.25);">
+            <div style="font-size:11px;font-weight:700;color:#93C5FD;margin-bottom:3px;">Backend · code-reviewer (RO)</div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">slow queries · N+1 · sync I/O · cache surface · payload size · pool sizing</div>
+          </div>
+          <div style="padding:11px 14px;border-radius:8px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.25);">
+            <div style="font-size:11px;font-weight:700;color:#A5B4FC;margin-bottom:3px;">Architecture · pm-architect</div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">CDN · Redis · sharding · trade-off documentation explicit</div>
+          </div>
+          <div style="padding:11px 14px;border-radius:8px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.25);">
+            <div style="font-size:11px;font-weight:700;color:#FCD34D;margin-bottom:3px;">Fallback · static analysis</div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">When no MCP — bundle topology, dep graph, route splits</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:11px 14px;border-radius:8px;background:rgba(67,56,202,0.04);border:1px solid rgba(67,56,202,0.20);font-size:11px;color:#94A3B8;line-height:1.6;">
+          <strong style="color:#A5B4FC;">3 budget profiles</strong> — strict / standard / relaxed — drive Web Vitals thresholds + pass/fail oracle. Default: standard.
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom callout: regression guard -->
+    <div style="margin-top:22px;padding:14px 18px;border-radius:10px;background:rgba(180,83,9,0.05);border:1px solid rgba(180,83,9,0.22);font-size:12px;color:#cbd5e1;line-height:1.6;">
+      <strong style="color:#FCD34D;">Regression guard:</strong>
+      Re-measurement (Step 7) compares every tracked metric. If any regressed beyond <strong style="color:#fff;">10% tolerance</strong>, the run halts and surfaces three options — roll back the optimisation that caused it, run <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:11px;">/crew investigate --type perf</code>, or accept with explicit override. No silent regressions.
     </div>
   </div>
 </div>

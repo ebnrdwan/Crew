@@ -314,6 +314,8 @@ These are the places in Crew's flow where `/crew push` is called automatically (
 | `/crew fix` Step 2 | create | Building | `bug` | `fix.md` Step 2 |
 | `/crew fix` Step 8 (after verify PASS) | update-status | In Review | — | `fix.md` Step 8 |
 | `/crew fix` after merge + deploy success | update-status | Shipped | — | `fix.md` Step 9 |
+| `/crew performance` Step 2 | create | Building | `spike` (with Source=performance) | `performance.md` Step 2 |
+| `/crew performance` Step 8 (after re-measure) | update-status | In Review (improved) / Shipped (report-only) | — | `performance.md` Step 8 |
 | `/crew drive` Phase 5 start (build) | update-status | Building | — | `drive.md` Phase 5 |
 | Phase 2.5 → Phase 3 transition (any path) | update-status | Building | — | phase orchestrator |
 | `/crew drive` Phase 6 start (QA) | update-status | In Review | — | `drive.md` Phase 6 |

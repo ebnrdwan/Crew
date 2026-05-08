@@ -821,7 +821,7 @@
       <div class="meta-row">
         <span><strong>6</strong> phases</span>
         <span><strong>20</strong> agents</span>
-        <span><strong>15</strong> commands</span>
+        <span><strong>16</strong> commands</span>
         <span><strong>Gang</strong> integrated</span>
       </div>
       <div class="palette-strip">
@@ -1309,8 +1309,80 @@
     </div>
   </div>
 
-  <!-- ═══════════════════ SLIDE 13 — PLAIN ENGLISH ═══════════════════ -->
+  <!-- ═══════════════════ SLIDE 13 — PERFORMANCE ═══════════════════ -->
   <div class="slide" id="slide-13">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(67,56,202,0.10); border:1px solid rgba(67,56,202,0.32); color:#A5B4FC;">
+        <span class="slide-tag-dot" style="background:#A5B4FC;"></span>Performance Loop
+      </div>
+      <h1 class="headline">Measure. Optimise. Re-measure.</h1>
+      <h2 class="subhead">Performance work is uniquely measurable. <code class="kbd-code">/crew performance</code> runs the full loop in one command — every claim is backed by a number that moved.</h2>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;margin-bottom:22px;">
+        <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(15,118,110,0.32);text-align:center;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:8px;">Step 3</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Measure</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;">Lighthouse · trace · network · memory</div>
+        </div>
+        <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(180,83,9,0.32);text-align:center;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FCD34D;margin-bottom:8px;">Step 4–5</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Recommend</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;">P1/P2/P3 by impact × effort</div>
+        </div>
+        <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(29,78,216,0.32);text-align:center;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93C5FD;margin-bottom:8px;">Step 6</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Implement</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;">Opt-in · selected items only</div>
+        </div>
+        <div style="padding:18px 16px;border-radius:12px;background:rgba(0,0,0,0.30);border:1px solid rgba(67,56,202,0.32);text-align:center;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A5B4FC;margin-bottom:8px;">Step 7</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Re-measure</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;">Same protocol · before/after IMPACT</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:22px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:12px;">IMPACT.md headline numbers</div>
+          <div style="background:rgba(0,0,0,0.45);border:1px solid rgba(15,118,110,0.30);border-radius:10px;padding:18px 22px;font-family:'Fira Code',monospace;font-size:11.5px;line-height:1.95;color:#cbd5e1;">
+| <span style="color:#FED7AA;">Metric</span>    | <span style="color:#FED7AA;">Before</span> | <span style="color:#FED7AA;">After</span>  | <span style="color:#FED7AA;">Delta</span>            |
+|-----------|--------|--------|------------------|
+| LCP       | 4200ms | 2100ms | <span style="color:#86EFAC;">−50%   ✓</span>      |
+| FCP       | 2100ms | 1500ms | <span style="color:#86EFAC;">−29%   ✓</span>      |
+| INP       | 180ms  | 192ms  | <span style="color:#FCD34D;">+7%    ⚠ tol</span>   |
+| CLS       | 0.04   | 0.04   |   0 ·            |
+| Bundle JS | 540kb  | 320kb  | <span style="color:#86EFAC;">−41%   ✓</span>      |
+
+<span style="color:var(--muted);">Lighthouse:</span> <span style="color:#FED7AA;">47</span> → <span style="color:#86EFAC;">89  (+42)</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FCD34D;margin-bottom:12px;">3 budget profiles</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="padding:10px 14px;border-radius:8px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.30);">
+              <div style="font-size:11px;font-weight:700;color:#A5B4FC;margin-bottom:2px;">strict</div>
+              <div style="font-size:10px;color:var(--muted);">LCP ≤ 1.5s · INP ≤ 100ms · bundle ≤ 170kb</div>
+            </div>
+            <div style="padding:10px 14px;border-radius:8px;background:rgba(15,118,110,0.06);border:1px solid rgba(15,118,110,0.30);">
+              <div style="font-size:11px;font-weight:700;color:#5EEAD4;margin-bottom:2px;">standard <span style="color:var(--muted);">(default)</span></div>
+              <div style="font-size:10px;color:var(--muted);">LCP ≤ 2.5s · INP ≤ 200ms · bundle ≤ 350kb</div>
+            </div>
+            <div style="padding:10px 14px;border-radius:8px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.30);">
+              <div style="font-size:11px;font-weight:700;color:#FCD34D;margin-bottom:2px;">relaxed</div>
+              <div style="font-size:10px;color:var(--muted);">LCP ≤ 4.0s · INP ≤ 500ms · bundle ≤ 700kb</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:11px 14px;border-radius:8px;background:rgba(180,83,9,0.05);border:1px solid rgba(180,83,9,0.22);font-size:11px;color:var(--muted);line-height:1.6;">
+            <strong style="color:#FCD34D;">Regression guard:</strong> any metric regressed &gt; 10% halts the run. No silent regressions.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 14 — PLAIN ENGLISH ═══════════════════ -->
+  <div class="slide" id="slide-14">
     <div class="slide-inner">
       <div class="slide-tag" style="background:rgba(234,88,12,0.10); border:1px solid rgba(234,88,12,0.32); color:#FED7AA;">
         <span class="slide-tag-dot" style="background:#FED7AA;"></span>Plain-English Mode
@@ -1341,8 +1413,8 @@
     </div>
   </div>
 
-  <!-- ═══════════════════ SLIDE 14 — INSTALL ═══════════════════ -->
-  <div class="slide" id="slide-14">
+  <!-- ═══════════════════ SLIDE 15 — INSTALL ═══════════════════ -->
+  <div class="slide" id="slide-15">
     <div class="slide-inner cta-wrap">
       <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
         <span class="slide-tag-dot" style="background:#5EEAD4;"></span>Try it now

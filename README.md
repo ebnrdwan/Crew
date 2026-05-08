@@ -91,6 +91,7 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew profile [check\|set\|list]` | Manage user knowledge profile per tech (one-time per tech, cached) |
 | `/crew investigate [topic]` | Hypothesis-driven, time-boxed investigation (creates a spike card) |
 | `/crew fix [issue]` | Reproduce → locate → fix → verify a known bug (creates a bug card) |
+| `/crew performance [target]` | Measure → recommend → optimise → re-measure (Chrome DevTools MCP + numeric IMPACT.md) |
 
 ---
 
@@ -235,6 +236,20 @@ Two commands cover the diagnose → fix lifecycle:
 **Project-aware fix propagation.** Locate doesn't just find the primary site — it scans the whole codebase for the same bug pattern, classified as EXACT / FUZZY / LOOSE matches. The user picks scope (fix all / review each / primary only / EXACT only); sites NOT included get auto-spiked for later review so they're never silently lost. After verify passes, **Crew writes a structured impact report** to `.crew/fixes/{bug_id}/IMPACT.md` covering files modified, public interfaces changed (BREAKING / ADDITIVE / INTERNAL), blast radius, behavior changes, risk areas, production monitoring metrics to watch, rollback plan, and test coverage delta. The report is written down (not just chat output) so it can attach to the PR description.
 
 The two commands are stages of the same lifecycle: investigate → understand → fix. Or skip investigate when the cause is obvious.
+
+### Performance — measure, optimise, re-measure
+
+```bash
+/crew performance "https://app.example.com/dashboard"      # frontend
+/crew performance "POST /api/checkout"                      # backend
+/crew performance --type mobile --budget strict             # mobile cold-start
+```
+
+Full measure → recommend → optimise → re-measure loop in one command. Detects Chrome DevTools MCP at runtime — uses **Lighthouse + perf trace + network waterfall + memory snapshots** when available; static-analysis fallback when not. Budget profiles (`strict` / `standard` / `relaxed`) drive Web Vitals thresholds and pass/fail oracles.
+
+Defaults to **"ask after measurement"** before implementing — `--no-implement` to stay measure-only, `--auto-implement-quick-wins` to apply P1 items automatically.
+
+The IMPACT.md for performance is **numeric-first**: before/after tables for every tracked metric (LCP, FCP, INP, CLS, bundle size, p99 latency), deferred items auto-spawn follow-up spikes, regression beyond 10% tolerance halts the run. The "Headline numbers" table is the deliverable a stakeholder reads first.
 
 ---
 

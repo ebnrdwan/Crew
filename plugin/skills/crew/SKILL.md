@@ -32,6 +32,7 @@ Crew manages the full software development lifecycle through structured phases, 
 /crew profile [check|set|list]→ Manage user knowledge profile per technology
 /crew investigate [topic]     → Hypothesis-driven, time-boxed investigation (spike card)
 /crew fix [issue]             → Reproduce, locate, fix, verify a known bug (bug card)
+/crew performance [target]    → Measure → recommend → optimise → re-measure (with before/after IMPACT.md)
 ```
 
 ## Gang Integration
@@ -98,6 +99,11 @@ Available subcommands:
   /crew fix           Reproduce, locate, fix, verify a known bug
                           (creates bug card; reproduce → code-reviewer locate
                            → engineer dispatch → qa-engineer verify)
+
+  /crew performance   Measure → recommend → optimise → re-measure
+                          (Chrome DevTools MCP for runtime metrics,
+                           static analysis fallback; before/after
+                           IMPACT.md with numeric headline metrics)
 
 Current project status:
   → Read .crew/current-phase.yaml if it exists, show phase + project type
@@ -175,6 +181,19 @@ different `--type` or escalating to `/gang`. The recommendation is the first opt
 (marked ★) but never the only one — user can always pick differently. Technical
 investigations only — `/gang` handles strategic ones.
 
+### `performance` → Load performance command
+Read and follow `skills/crew/commands/performance.md`
+End-to-end performance loop: measure baseline → analyse → recommend prioritised
+fixes → optionally implement → re-measure → write a numeric impact report.
+Detects Chrome DevTools MCP at runtime — uses Lighthouse + perf trace +
+network waterfall + memory snapshots when available; static-analysis fallback
+when not. Budget profiles (strict / standard / relaxed) drive Web Vitals
+thresholds and pass/fail oracles. Defaults to "ask after measurement" before
+implementing; flags `--no-implement` and `--auto-implement-quick-wins`
+override. IMPACT.md is numeric-first: before/after metrics tables, deferred
+items auto-spawn follow-up spike, regression beyond 10% tolerance halts the
+run.
+
 ### `fix` → Load bug-fix command
 Read and follow `skills/crew/commands/fix.md`
 Reproduce → locate → fix → verify a known bug. Creates a `bug` card. Skips Crew
@@ -194,6 +213,6 @@ coverage delta, and a sign-off checklist for the human reviewer.
 ```
 Unknown subcommand: [arg]
 
-Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume, profile, investigate, fix
+Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume, profile, investigate, fix, performance
 Run /crew for help.
 ```
