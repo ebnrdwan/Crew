@@ -1188,6 +1188,99 @@
   </div>
 </div>
 
+<!-- ── IMPACT REPORTS & PATTERN PROPAGATION ── -->
+<div class="wrap">
+  <p class="sec-label">Project-Wide Fixes · IMPACT.md Reports</p>
+  <div style="padding:32px 28px;border-radius:20px;
+              background:linear-gradient(135deg,rgba(15,118,110,0.04),rgba(29,78,216,0.05));
+              border:1px solid var(--border);">
+    <p style="font-size:14px;color:#cbd5e1;line-height:1.7;margin-bottom:22px;">
+      <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:2px 7px;border-radius:5px;font-size:12px;">/crew fix</code> doesn't just patch one site. It scans the codebase for the same pattern, asks you which sites to include, fixes them in one coordinated pass, and writes a structured <strong style="color:#fff;">IMPACT.md</strong> so you (and the PR reviewer) see exactly what changed and what to watch.
+    </p>
+
+    <!-- Pattern scan classification + IMPACT.md preview side by side -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+
+      <!-- LEFT: pattern-scan classification -->
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FCD34D;margin-bottom:14px;">Pattern scan · Step 4</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div style="padding:14px 16px;border-radius:10px;background:rgba(21,128,61,0.06);border:1px solid rgba(21,128,61,0.30);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#86EFAC;background:rgba(21,128,61,0.12);padding:2px 8px;border-radius:5px;">EXACT</code>
+              <span style="font-size:13px;font-weight:600;color:#fff;">Same function, same logic</span>
+            </div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">High confidence — same fix applies. Recommended default: include.</div>
+          </div>
+
+          <div style="padding:14px 16px;border-radius:10px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.30);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#FCD34D;background:rgba(180,83,9,0.12);padding:2px 8px;border-radius:5px;">FUZZY</code>
+              <span style="font-size:13px;font-weight:600;color:#fff;">Similar logic, different context</span>
+            </div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">Medium confidence — usually same bug, occasionally not. User reviews.</div>
+          </div>
+
+          <div style="padding:14px 16px;border-radius:10px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.30);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#A5B4FC;background:rgba(67,56,202,0.12);padding:2px 8px;border-radius:5px;">LOOSE</code>
+              <span style="font-size:13px;font-weight:600;color:#fff;">Superficially similar</span>
+            </div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.5;">Low confidence — flagged for human review. Default: deferred to spike.</div>
+          </div>
+        </div>
+
+        <div style="padding:14px 16px;border-radius:10px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.20);font-size:11px;color:#94A3B8;line-height:1.6;">
+          <strong style="color:#D8B4FE;">Sites NOT included</strong> in fix scope auto-spawn a follow-up <code style="background:rgba(168,85,247,0.10);color:#D8B4FE;padding:1px 6px;border-radius:4px;font-size:10px;">SPK-{date}-{bug_id}-adjacent</code> spike, pushed as a Planned card. Never silently lost.
+        </div>
+      </div>
+
+      <!-- RIGHT: IMPACT.md preview -->
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:14px;">IMPACT.md · Step 7.5</div>
+
+        <div style="background:rgba(0,0,0,0.40);border:1px solid rgba(15,118,110,0.25);border-radius:10px;padding:18px 20px;font-family:'Fira Code',monospace;font-size:11.5px;line-height:1.85;color:#cbd5e1;">
+<span style="color:#5EEAD4;font-weight:700;"># Impact Report — BUG-...</span>
+<span style="color:#94A3B8;">Severity: high · Sites fixed: 3 · Tests: 47/47</span>
+
+<span style="color:#FCD34D;">## Files modified</span>
+  <span style="color:#94A3B8;">— src/auth/login.ts        +4 / −2</span>
+  <span style="color:#94A3B8;">— src/auth/oauth.ts        +4 / −2</span>
+  <span style="color:#94A3B8;">— tests/auth.test.ts      +28 / −0</span>
+
+<span style="color:#FCD34D;">## Public interfaces changed</span>
+  <span style="color:#FED7AA;">BREAKING</span>  · 0
+  <span style="color:#FCD34D;">ADDITIVE</span>  · 1   /auth/login: +error_code
+  <span style="color:#94A3B8;">INTERNAL</span>  · 2
+
+<span style="color:#FCD34D;">## Blast radius</span>
+  <span style="color:#94A3B8;">— Direct callers: 3</span>
+  <span style="color:#94A3B8;">— Test files re-run: 12 (passing)</span>
+
+<span style="color:#FCD34D;">## Behavior changes</span>
+<span style="color:#FCD34D;">## Risk areas</span>     <span style="color:#94A3B8;">(deferred sites)</span>
+<span style="color:#A5B4FC;">## Production monitoring</span>  ← <span style="color:#A5B4FC;">key</span>
+<span style="color:#FCD34D;">## Rollback plan</span>
+<span style="color:#FCD34D;">## Test coverage</span>   <span style="color:#86EFAC;">87.2% → 89.4%</span>
+<span style="color:#FCD34D;">## Sign-off checklist</span>
+        </div>
+
+        <div style="margin-top:14px;font-size:11px;color:#94A3B8;line-height:1.6;">
+          Written to <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:10px;">.crew/fixes/{bug_id}/IMPACT.md</code> · attach to the PR description · greppable, diffable, never disappears in chat scroll.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom callout: production monitoring -->
+    <div style="margin-top:22px;padding:14px 18px;border-radius:10px;background:rgba(67,56,202,0.05);border:1px solid rgba(67,56,202,0.22);font-size:12px;color:#cbd5e1;line-height:1.6;">
+      <strong style="color:#A5B4FC;">The "Production monitoring" section is what makes ops trust the fix.</strong>
+      A bug fix that says "watch <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:11px;">auth.login.500_rate</code> — should drop to ~0" gives the on-call engineer a binary signal post-deploy. Without that section, they're guessing what to watch. Trivial to add, dramatically changes what happens after the merge.
+    </div>
+  </div>
+</div>
+
 <!-- ── PLAIN-ENGLISH MODE ── -->
 <div class="wrap">
   <p class="sec-label">Plain-English Mode · Per-Tech Knowledge Profile</p>

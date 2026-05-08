@@ -1232,8 +1232,85 @@
     </div>
   </div>
 
-  <!-- ═══════════════════ SLIDE 12 — PLAIN ENGLISH ═══════════════════ -->
+  <!-- ═══════════════════ SLIDE 12 — IMPACT REPORT ═══════════════════ -->
   <div class="slide" id="slide-12">
+    <div class="slide-inner">
+      <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
+        <span class="slide-tag-dot" style="background:#5EEAD4;"></span>Project-Wide Fixes &amp; IMPACT Reports
+      </div>
+      <h1 class="headline">Fix everywhere it lives.<br/>Write down what changed.</h1>
+      <h2 class="subhead">Pattern scan classifies adjacent sites EXACT / FUZZY / LOOSE — user picks scope. Sites deferred auto-spike to a follow-up. After verify, IMPACT.md is written for the PR reviewer.</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:22px;margin-top:14px;">
+
+        <!-- LEFT: classification stack -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FCD34D;margin-bottom:14px;">Pattern scan classification</div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:14px 16px;border-radius:10px;background:rgba(21,128,61,0.08);border:1px solid rgba(21,128,61,0.32);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+                <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#86EFAC;background:rgba(21,128,61,0.15);padding:2px 8px;border-radius:5px;">EXACT</code>
+                <span style="font-size:13px;font-weight:600;color:#fff;">Same function, same logic</span>
+              </div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5;">High confidence · same fix applies · default: include</div>
+            </div>
+            <div style="padding:14px 16px;border-radius:10px;background:rgba(180,83,9,0.08);border:1px solid rgba(180,83,9,0.32);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+                <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#FCD34D;background:rgba(180,83,9,0.15);padding:2px 8px;border-radius:5px;">FUZZY</code>
+                <span style="font-size:13px;font-weight:600;color:#fff;">Similar logic, different context</span>
+              </div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5;">Medium confidence · usually same bug · user reviews</div>
+            </div>
+            <div style="padding:14px 16px;border-radius:10px;background:rgba(67,56,202,0.08);border:1px solid rgba(67,56,202,0.32);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+                <code style="font-family:'Fira Code',monospace;font-size:11px;font-weight:700;color:#A5B4FC;background:rgba(67,56,202,0.15);padding:2px 8px;border-radius:5px;">LOOSE</code>
+                <span style="font-size:13px;font-weight:600;color:#fff;">Superficially similar</span>
+              </div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.5;">Low confidence · flagged for human · default: deferred</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;padding:12px 16px;border-radius:10px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.22);font-size:11px;color:var(--muted);line-height:1.6;">
+            <strong style="color:#D8B4FE;">Sites NOT included</strong> auto-spawn a <code class="kbd-code" style="font-size:10px;">SPK-{date}-{bug}-adjacent</code> spike → Planned card. Never silently lost.
+          </div>
+        </div>
+
+        <!-- RIGHT: IMPACT.md preview -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:14px;">IMPACT.md · 9 sections</div>
+
+          <div style="background:rgba(0,0,0,0.45);border:1px solid rgba(15,118,110,0.30);border-radius:10px;padding:18px 22px;font-family:'Fira Code',monospace;font-size:11.5px;line-height:1.95;color:#cbd5e1;">
+<span style="color:#5EEAD4;font-weight:700;"># Impact Report — BUG-...</span>
+<span style="color:var(--muted);">Severity: high · Sites: 3 · Tests: 47/47</span>
+
+<span style="color:#FCD34D;">## Files modified</span>          <span style="color:var(--muted);">(table)</span>
+<span style="color:#FCD34D;">## Public interfaces changed</span> <span style="color:var(--muted);">(B/A/I)</span>
+<span style="color:#FCD34D;">## Blast radius</span>            <span style="color:var(--muted);">(callers, tests)</span>
+<span style="color:#FCD34D;">## Behavior changes</span>        <span style="color:var(--muted);">(semantic)</span>
+<span style="color:#FCD34D;">## Risk areas</span>              <span style="color:var(--muted);">(deferred + drift)</span>
+<span style="color:#A5B4FC;">## Production monitoring   ★ key section</span>
+<span style="color:#FCD34D;">## Rollback plan</span>           <span style="color:var(--muted);">(commands)</span>
+<span style="color:#FCD34D;">## Test coverage</span>     <span style="color:#86EFAC;">87.2% → 89.4%</span>
+<span style="color:#FCD34D;">## Sign-off checklist</span>      <span style="color:var(--muted);">(reviewer)</span>
+          </div>
+
+          <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6;">
+            Written to <code class="kbd-code" style="font-size:10px;">.crew/fixes/{bug_id}/IMPACT.md</code> — attach to PR description, greppable, diffable, never lost in chat scroll.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom callout -->
+      <div style="margin-top:20px;padding:14px 20px;border-radius:10px;background:rgba(67,56,202,0.06);border:1px solid rgba(67,56,202,0.25);font-size:12px;color:#cbd5e1;line-height:1.6;">
+        <strong style="color:#A5B4FC;">★ Production monitoring</strong> is the load-bearing piece for ops trust. "Watch <code class="kbd-code" style="font-size:10px;">auth.login.500_rate</code> — should drop to ~0" turns merge-and-pray into merge-and-verify. Without that section the on-call engineer guesses what to watch. Trivial to add, dramatically changes what happens after the merge.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SLIDE 13 — PLAIN ENGLISH ═══════════════════ -->
+  <div class="slide" id="slide-13">
     <div class="slide-inner">
       <div class="slide-tag" style="background:rgba(234,88,12,0.10); border:1px solid rgba(234,88,12,0.32); color:#FED7AA;">
         <span class="slide-tag-dot" style="background:#FED7AA;"></span>Plain-English Mode
@@ -1264,8 +1341,8 @@
     </div>
   </div>
 
-  <!-- ═══════════════════ SLIDE 13 — INSTALL ═══════════════════ -->
-  <div class="slide" id="slide-13">
+  <!-- ═══════════════════ SLIDE 14 — INSTALL ═══════════════════ -->
+  <div class="slide" id="slide-14">
     <div class="slide-inner cta-wrap">
       <div class="slide-tag" style="background:rgba(15,118,110,0.10); border:1px solid rgba(15,118,110,0.30); color:#5EEAD4;">
         <span class="slide-tag-dot" style="background:#5EEAD4;"></span>Try it now
