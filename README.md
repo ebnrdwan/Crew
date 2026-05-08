@@ -232,6 +232,8 @@ Two commands cover the diagnose → fix lifecycle:
 
 **`/crew fix`** runs through reproduce → locate → fix → verify. Skips Phase 1 (Strategy) + Phase 2 (Design); known bugs don't need scoping. The Reproduce step writes a failing regression test that the fix must satisfy — the test is the spec; engineers fix the code, never the test. On cross-layer bugs (UI + API), the user picks sequential vs parallel dispatch (avoids two agents fighting over related files).
 
+**Project-aware fix propagation.** Locate doesn't just find the primary site — it scans the whole codebase for the same bug pattern, classified as EXACT / FUZZY / LOOSE matches. The user picks scope (fix all / review each / primary only / EXACT only); sites NOT included get auto-spiked for later review so they're never silently lost. After verify passes, **Crew writes a structured impact report** to `.crew/fixes/{bug_id}/IMPACT.md` covering files modified, public interfaces changed (BREAKING / ADDITIVE / INTERNAL), blast radius, behavior changes, risk areas, production monitoring metrics to watch, rollback plan, and test coverage delta. The report is written down (not just chat output) so it can attach to the PR description.
+
 The two commands are stages of the same lifecycle: investigate → understand → fix. Or skip investigate when the cause is obvious.
 
 ---

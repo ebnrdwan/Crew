@@ -179,9 +179,16 @@ investigations only — `/gang` handles strategic ones.
 Read and follow `skills/crew/commands/fix.md`
 Reproduce → locate → fix → verify a known bug. Creates a `bug` card. Skips Crew
 Phase 1 (Strategy) and Phase 2 (Design). Locate uses code-reviewer in read-only
-mode. Fix uses ui-engineer / api-engineer; on cross-layer bugs the user picks
-sequential vs parallel dispatch. Verify uses qa-engineer; the fix MUST satisfy
-the regression test the command writes during the Reproduce step.
+mode AND scans the codebase for the same pattern in other places (EXACT / FUZZY
+/ LOOSE classification). Step 4.5 confirms scope: fix all matches / review each /
+primary only / EXACT only — sites NOT included get auto-spiked for later review.
+Fix uses ui-engineer / api-engineer; cross-layer bugs ask sequential vs parallel
+dispatch. Verify uses qa-engineer; the fix MUST satisfy the regression test the
+command writes during the Reproduce step. After verify, Step 7.5 generates
+`.crew/fixes/{bug_id}/IMPACT.md` — a structured report covering files modified,
+public interfaces changed, blast radius, behavior changes, risk areas (deferred
+sites + adjacent code), production monitoring suggestions, rollback plan, test
+coverage delta, and a sign-off checklist for the human reviewer.
 
 ### Unknown subcommand
 ```

@@ -932,7 +932,7 @@
       <div class="feature-icon">🐞</div>
       <div>
         <div class="feature-title">/crew fix</div>
-        <div class="feature-desc">Reproduce → locate → fix → verify a known bug. The Reproduce step writes a failing test that the fix must satisfy — the test is the spec. Cross-layer bugs ask sequential vs parallel dispatch.</div>
+        <div class="feature-desc">Reproduce → locate → fix → verify. Project-aware: scans for the same pattern across the codebase (EXACT/FUZZY/LOOSE). Writes a structured <strong>IMPACT.md</strong> covering files, interfaces, blast radius, behavior changes, monitoring.</div>
       </div>
     </div>
   </div>
@@ -1168,13 +1168,15 @@
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:8px;">Bug is known</div>
         <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">/crew fix</div>
         <div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:14px;">
-          Reproduce → locate → fix → verify. Creates a <strong style="color:#fff;">bug</strong> card. Skips Phase 1 (Strategy) and Phase 2 (Design) — known bugs don't need scoping.
+          Reproduce → locate → fix → verify. Creates a <strong style="color:#fff;">bug</strong> card. Project-aware pattern scan + structured impact report. Skips Phase 1 + 2.
         </div>
         <div style="font-family:'Fira Code',monospace;font-size:11px;color:#cbd5e1;background:rgba(0,0,0,0.30);padding:10px 12px;border-radius:6px;line-height:1.7;border:1px solid rgba(255,255,255,0.05);">
           <span style="color:#5EEAD4;">repro</span>          <span style="color:#94A3B8;">→</span> failing regression test
-          <br><span style="color:#5EEAD4;">locate</span>         <span style="color:#94A3B8;">→</span> code-reviewer (read-only)
+          <br><span style="color:#5EEAD4;">locate</span>         <span style="color:#94A3B8;">→</span> code-reviewer + scan (EXACT/FUZZY/LOOSE)
+          <br><span style="color:#5EEAD4;">scope</span>          <span style="color:#94A3B8;">→</span> user picks sites; deferred → auto-spike
           <br><span style="color:#5EEAD4;">fix</span>            <span style="color:#94A3B8;">→</span> ui / api / both (user picks)
           <br><span style="color:#5EEAD4;">verify</span>         <span style="color:#94A3B8;">→</span> qa-engineer regression suite
+          <br><span style="color:#5EEAD4;">impact</span>         <span style="color:#94A3B8;">→</span> IMPACT.md (files / interfaces / monitoring)
         </div>
       </div>
     </div>
