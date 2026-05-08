@@ -30,6 +30,8 @@ Crew manages the full software development lifecycle through structured phases, 
 /crew push                    → Sync the current feature to GitHub Projects (live status card)
 /crew resume [id]             → Resume from a usage-budget checkpoint (or list)
 /crew profile [check|set|list]→ Manage user knowledge profile per technology
+/crew investigate [topic]     → Hypothesis-driven, time-boxed investigation (spike card)
+/crew fix [issue]             → Reproduce, locate, fix, verify a known bug (bug card)
 ```
 
 ## Gang Integration
@@ -87,6 +89,15 @@ Available subcommands:
   /crew profile       Manage user knowledge profile per technology
                           (one-time per tech; cached; sets plain-English mode
                            when any tech is none/low)
+
+  /crew investigate   Hypothesis-driven, time-boxed investigation
+                          (creates spike card; read-only agents; ends with
+                           a recommendation. Technical only — for strategic
+                           investigations use /gang directly)
+
+  /crew fix           Reproduce, locate, fix, verify a known bug
+                          (creates bug card; reproduce → code-reviewer locate
+                           → engineer dispatch → qa-engineer verify)
 
 Current project status:
   → Read .crew/current-phase.yaml if it exists, show phase + project type
@@ -153,10 +164,26 @@ detects techs and asks about new ones), `set <tech> <level>`, `list`, `clear <te
 `reset`. When any cached tech is none/low, all subsequent agent dispatches get a
 "PLAIN ENGLISH MODE" prefix.
 
+### `investigate` → Load investigation command
+Read and follow `skills/crew/commands/investigate.md`
+Hypothesis-driven investigation, time-boxed. Creates a `spike` card on the GitHub
+Projects board. Read-only agent dispatch — no code changes during investigate. Ends
+with a confidence-gated recommendation: HIGH confidence suggests a specific next
+command (`/crew fix` or `/crew feature`); MEDIUM/LOW returns findings only without
+suggesting follow-up. Technical investigations only — `/gang` handles strategic ones.
+
+### `fix` → Load bug-fix command
+Read and follow `skills/crew/commands/fix.md`
+Reproduce → locate → fix → verify a known bug. Creates a `bug` card. Skips Crew
+Phase 1 (Strategy) and Phase 2 (Design). Locate uses code-reviewer in read-only
+mode. Fix uses ui-engineer / api-engineer; on cross-layer bugs the user picks
+sequential vs parallel dispatch. Verify uses qa-engineer; the fix MUST satisfy
+the regression test the command writes during the Reproduce step.
+
 ### Unknown subcommand
 ```
 Unknown subcommand: [arg]
 
-Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume, profile
+Available: init, onboard, setup-mcp, feature, drive, deploy, gaps, features, gang-import, gang-escalate, push, resume, profile, investigate, fix
 Run /crew for help.
 ```

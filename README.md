@@ -89,6 +89,8 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew push` | Sync the current feature to GitHub Projects (live status card) |
 | `/crew resume [id]` | Resume from a usage-budget checkpoint |
 | `/crew profile [check\|set\|list]` | Manage user knowledge profile per tech (one-time per tech, cached) |
+| `/crew investigate [topic]` | Hypothesis-driven, time-boxed investigation (creates a spike card) |
+| `/crew fix [issue]` | Reproduce → locate → fix → verify a known bug (creates a bug card) |
 
 ---
 
@@ -214,6 +216,23 @@ When any tech is `none` / `low`, all later agent dispatches get a **PLAIN ENGLIS
 ```
 
 Cached entries are project-scoped — different projects can have different levels for the same tech (high TS at work, low Python in a learning side-project).
+
+---
+
+## Investigations & Bug Fixes
+
+Two commands cover the diagnose → fix lifecycle:
+
+```bash
+/crew investigate "login fails 5% of the time"   # symptom seen, cause unknown
+/crew fix "login crashes with apostrophe in password"  # bug is known
+```
+
+**`/crew investigate`** is hypothesis-driven and time-boxed. Read-only agent dispatch — no code changes during investigation. Creates a `spike` card; ends with confidence-gated recommendation: HIGH confidence suggests `/crew fix` or `/crew feature`; MEDIUM/LOW returns findings without auto-suggesting follow-up. **Technical investigations only** — for strategic ones (retention drops, market shifts) use `/gang` directly; Crew does not auto-route between the two.
+
+**`/crew fix`** runs through reproduce → locate → fix → verify. Skips Phase 1 (Strategy) + Phase 2 (Design); known bugs don't need scoping. The Reproduce step writes a failing regression test that the fix must satisfy — the test is the spec; engineers fix the code, never the test. On cross-layer bugs (UI + API), the user picks sequential vs parallel dispatch (avoids two agents fighting over related files).
+
+The two commands are stages of the same lifecycle: investigate → understand → fix. Or skip investigate when the cause is obvious.
 
 ---
 

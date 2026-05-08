@@ -387,6 +387,8 @@
     .feature-card:nth-child(13) { animation-delay: 5.4s; }
     .feature-card:nth-child(14) { animation-delay: 5.5s; }
     .feature-card:nth-child(15) { animation-delay: 5.6s; }
+    .feature-card:nth-child(16) { animation-delay: 5.7s; }
+    .feature-card:nth-child(17) { animation-delay: 5.8s; }
     .feature-icon {
       width: 40px; height: 40px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -428,6 +430,9 @@
     .cmd-row:nth-child(11) { animation-delay: 6.5s; }
     .cmd-row:nth-child(12) { animation-delay: 6.6s; }
     .cmd-row:nth-child(13) { animation-delay: 6.7s; }
+    .cmd-row:nth-child(14) { animation-delay: 6.8s; }
+    .cmd-row:nth-child(15) { animation-delay: 6.9s; }
+    .cmd-row:nth-child(16) { animation-delay: 7.0s; }
     .cmd-code {
       font-family: 'Fira Code', 'Courier New', monospace; font-size: 13px;
       color: #FED7AA; white-space: nowrap; font-weight: 500;
@@ -916,6 +921,20 @@
         <div class="feature-desc">Epic, Sprint, Story, Task all on one GitHub board with no duplicates. One card per shippable unit; epics/sprints become custom fields, tasks become checklist items inside the card. Identity = <code>feature_id</code>.</div>
       </div>
     </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔬</div>
+      <div>
+        <div class="feature-title">/crew investigate</div>
+        <div class="feature-desc">Hypothesis-driven, time-boxed investigation. Read-only agent dispatch — no code changes. Creates a <code>spike</code> card. Confidence-gated recommendation: HIGH suggests next command, MEDIUM/LOW returns findings only.</div>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🐞</div>
+      <div>
+        <div class="feature-title">/crew fix</div>
+        <div class="feature-desc">Reproduce → locate → fix → verify a known bug. The Reproduce step writes a failing test that the fix must satisfy — the test is the spec. Cross-layer bugs ask sequential vs parallel dispatch.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -937,6 +956,8 @@
     <div class="cmd-row"><code class="cmd-code">/crew push</code><span class="cmd-desc">Sync current feature to GitHub Projects (live status card)</span></div>
     <div class="cmd-row"><code class="cmd-code">/crew resume [id]</code><span class="cmd-desc">Resume from a usage-budget checkpoint (auto-fired by scheduled tasks)</span></div>
     <div class="cmd-row"><code class="cmd-code">/crew profile [check|set|list]</code><span class="cmd-desc">Manage user knowledge profile per tech (one-time per tech, cached)</span></div>
+    <div class="cmd-row"><code class="cmd-code">/crew investigate [topic]</code><span class="cmd-desc">Hypothesis-driven, time-boxed investigation (creates a spike card)</span></div>
+    <div class="cmd-row"><code class="cmd-code">/crew fix [issue]</code><span class="cmd-desc">Reproduce → locate → fix → verify a known bug (creates a bug card)</span></div>
   </div>
 </div>
 
@@ -1106,6 +1127,62 @@
       Full doc:
       <a href="https://github.com/ebnrdwan/Crew/blob/main/plugin/skills/crew/references/usage-budget.md" style="color:#A5B4FC;text-decoration:none;border-bottom:1px dotted rgba(165,180,252,0.4);">references/usage-budget.md</a>.
     </p>
+  </div>
+</div>
+
+<!-- ── INVESTIGATE & FIX ── -->
+<div class="wrap">
+  <p class="sec-label">Diagnose &amp; Fix · Investigate → Fix Lifecycle</p>
+  <div style="padding:32px 28px;border-radius:20px;
+              background:linear-gradient(135deg,rgba(21,128,61,0.04),rgba(15,118,110,0.05));
+              border:1px solid var(--border);">
+    <p style="font-size:14px;color:#cbd5e1;line-height:1.7;margin-bottom:22px;">
+      Two commands cover the diagnose → fix lifecycle. Run them stand-alone or chained.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 64px 1fr;gap:18px;align-items:stretch;">
+      <div style="padding:24px 22px;border-radius:14px;background:rgba(0,0,0,0.25);border:1px solid rgba(21,128,61,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#86EFAC;margin-bottom:8px;">Symptom seen, cause unknown</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">/crew investigate</div>
+        <div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:14px;">
+          Hypothesis-driven, time-boxed. Creates a <strong style="color:#fff;">spike</strong> card. Read-only agent dispatch — no code changes during investigation.
+        </div>
+        <div style="font-family:'Fira Code',monospace;font-size:11px;color:#cbd5e1;background:rgba(0,0,0,0.30);padding:10px 12px;border-radius:6px;line-height:1.7;border:1px solid rgba(255,255,255,0.05);">
+          <span style="color:#86EFAC;">bug</span>            <span style="color:#94A3B8;">→</span> code-reviewer + gap-finder
+          <br><span style="color:#86EFAC;">perf</span>           <span style="color:#94A3B8;">→</span> performance-optimizer + code-reviewer
+          <br><span style="color:#86EFAC;">integration</span>    <span style="color:#94A3B8;">→</span> code-reviewer + api-engineer (RO)
+          <br><span style="color:#86EFAC;">architecture</span>   <span style="color:#94A3B8;">→</span> pm-architect
+        </div>
+      </div>
+
+      <div style="align-self:center;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94A3B8;">HIGH</span>
+        <span style="font-size:10px;color:#94A3B8;">confidence</span>
+        <div style="width:100%;height:2px;background:linear-gradient(90deg,rgba(21,128,61,0.55),rgba(15,118,110,0.85));border-radius:1px;position:relative;">
+          <span style="position:absolute;right:-1px;top:-3px;width:0;height:0;border-left:7px solid rgba(15,118,110,0.85);border-top:4px solid transparent;border-bottom:4px solid transparent;"></span>
+        </div>
+        <span style="font-size:10px;color:#94A3B8;">auto-suggest</span>
+      </div>
+
+      <div style="padding:24px 22px;border-radius:14px;background:rgba(0,0,0,0.25);border:1px solid rgba(15,118,110,0.30);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:8px;">Bug is known</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">/crew fix</div>
+        <div style="font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:14px;">
+          Reproduce → locate → fix → verify. Creates a <strong style="color:#fff;">bug</strong> card. Skips Phase 1 (Strategy) and Phase 2 (Design) — known bugs don't need scoping.
+        </div>
+        <div style="font-family:'Fira Code',monospace;font-size:11px;color:#cbd5e1;background:rgba(0,0,0,0.30);padding:10px 12px;border-radius:6px;line-height:1.7;border:1px solid rgba(255,255,255,0.05);">
+          <span style="color:#5EEAD4;">repro</span>          <span style="color:#94A3B8;">→</span> failing regression test
+          <br><span style="color:#5EEAD4;">locate</span>         <span style="color:#94A3B8;">→</span> code-reviewer (read-only)
+          <br><span style="color:#5EEAD4;">fix</span>            <span style="color:#94A3B8;">→</span> ui / api / both (user picks)
+          <br><span style="color:#5EEAD4;">verify</span>         <span style="color:#94A3B8;">→</span> qa-engineer regression suite
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:14px 18px;border-radius:10px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.20);font-size:12px;color:#94A3B8;line-height:1.6;">
+      <strong style="color:#D8B4FE;">Strategic vs technical separation:</strong>
+      Crew does <strong>not</strong> auto-route to Gang. <code style="background:rgba(255,255,255,0.05);color:#cbd5e1;padding:1px 6px;border-radius:4px;font-size:11px;">/crew investigate</code> is for technical investigations only (bugs, perf, integration mysteries, architecture). For strategic ones (retention drops, conversion analysis), invoke <code style="background:rgba(168,85,247,0.10);color:#D8B4FE;padding:1px 6px;border-radius:4px;font-size:11px;">/gang</code> directly. The choice of tool is yours.
+    </div>
   </div>
 </div>
 
