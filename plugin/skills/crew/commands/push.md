@@ -66,7 +66,7 @@ Load `github.projects[]` from `.crew/config.yaml`. Each entry has:
 ```yaml
 - project_number: 5
   project_node_id: PVT_kwDO...
-  owner: ebnrdwan
+  owner: <github-user-or-org>
   status_field_id: PVTSSF_lADO...
   logical_state_options:
     Planned:    {id: f75ad846-..., name: "Todo"}
@@ -219,7 +219,7 @@ features:
       - project_number: 5
         project_node_id: PVT_kwDO...
         item_id: PVTI_lADO...        # ← captured
-        item_url: https://github.com/users/ebnrdwan/projects/5/views/1?pane=item&itemId=...
+        item_url: https://github.com/users/<owner>/projects/<number>/views/1?pane=item&itemId=...
         last_status: Planned
         last_phase: "1"
         created_at: 2026-05-07T22:00:00Z
