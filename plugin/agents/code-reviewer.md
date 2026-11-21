@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Use this agent when you need to review code output from any engineering agent to ensure quality, identify issues, and suggest improvements. Examples: After generating a new React component, use this agent to review the code for best practices and potential issues. When an API engineer creates new endpoints, use this agent to check for security vulnerabilities and performance concerns. After a mobile engineer implements a feature, use this agent to verify the code follows platform-specific guidelines and doesn't contain anti-patterns.
+description: "Use this agent when you need to review code output from any engineering agent to ensure quality, identify issues, and suggest improvements. Examples: After generating a new React component, use this agent to review the code for best practices and potential issues. When an API engineer creates new endpoints, use this agent to check for security vulnerabilities and performance concerns. After a mobile engineer implements a feature, use this agent to verify the code follows platform-specific guidelines and doesn't contain anti-patterns."
 color: red
 ---
 

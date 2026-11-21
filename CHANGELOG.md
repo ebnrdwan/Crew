@@ -7,6 +7,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.5.2] — 2026-11-21
+
+Makes all 20 agents load in GitHub Copilot CLI as well as Claude Code.
+
+### Fixed — agent frontmatter is now valid YAML
+- **10 agents were skipped by GitHub Copilot CLI**: a11y-expert, api-contract-architect, api-engineer, code-reviewer,
+  doc-writer, feature-planner, performance-optimizer, post-launch-analyst, product-strategist, ui-animation-designer.
+  Their unquoted `description:` contained `: ` (e.g. "Examples: <example>Context: ..."), which strict YAML rejects.
+  Claude Code's lenient parser accepted them; Copilot dropped them without a warning.
+- The descriptions are now double-quoted strings. The text is unchanged (checked by parsing each one back and comparing).
+- Verified: Claude Code `plugin details` lists 20 agents; Copilot CLI 1.0.112 resolves all 20 as `crew:<name>`.
+
+### Copilot CLI notes
+- The `SessionStart` hook (prints `.crew/instructions.md`) is not verified in Copilot CLI.
+- Skills that dispatch agents by Claude's Agent tool are not verified in Copilot CLI.
+
+---
+
 ## [0.5.1] — 2026-05-08
 
 Adds the performance command. Total command surface is now 16.
