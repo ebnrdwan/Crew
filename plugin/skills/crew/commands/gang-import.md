@@ -12,7 +12,7 @@ technical architecture, risk register, and CONDITIONAL-GO conditions.
 
 ## Prerequisites
 
-1. **Gang plugin installed** and available — `~/.claude/plugins/marketplaces/gang-marketplace/`.
+1. **Gang plugin installed** and available: the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `ls -d ~/.claude/plugins/cache/*/gang/*/ ~/.copilot/installed-plugins/*/gang/ 2>/dev/null`).
 2. **Gang evaluation completed** through at least the `advise` stage. `deliver` is preferred (gives full GO Package).
 3. **Crew initialised** in the project — `.crew/roadmap.yaml` exists.
 

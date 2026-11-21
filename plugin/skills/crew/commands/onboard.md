@@ -500,7 +500,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Crew Framework
 
-This project uses the [Crew](https://github.com/AZidan/archflow) phase-based development framework.
+This project uses the [Crew](https://github.com/ebnrdwan/Crew) phase-based development framework.
 
 - **Current Phase**: [N] ([Phase Name]) — see `.crew/current-phase.yaml`
 - **Project Context**: `.crew/project-context.md`
@@ -518,7 +518,7 @@ If `CLAUDE.md` ALREADY exists, append the Crew section to the end:
 
 ## Crew Framework
 
-This project uses the [Crew](https://github.com/AZidan/archflow) phase-based development framework.
+This project uses the [Crew](https://github.com/ebnrdwan/Crew) phase-based development framework.
 
 - **Current Phase**: [N] ([Phase Name]) — see `.crew/current-phase.yaml`
 - **Project Context**: `.crew/project-context.md`

@@ -94,16 +94,6 @@ If a condition cannot be validated and the feature must ship anyway, that's a st
 
 ## Versioning & compatibility
 
-Crew tracks the Gang plugin version it was developed against. See `plugin/.claude-plugin/plugin.json`:
-
-```json
-"upstream": {
-  "name": "archflow",
-  "url": "https://github.com/azidan/archflow",
-  "version_at_fork": "1.2.3"
-}
-```
-
 Crew handoff commands target Gang **v1.3.x and later** (the version that introduced GO Package generation, `github_push` state recording, and `default_card_type` in config). Earlier Gang versions don't produce the artifacts Crew expects to consume.
 
 If your Gang plugin is older than v1.3.0, run:

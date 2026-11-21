@@ -39,7 +39,7 @@ Crew manages the full software development lifecycle through structured phases, 
 
 Crew integrates with the **Gang multi-agent committee plugin**. Gang evaluates whether to build something; Crew executes the build. See `references/gang-integration.md` for the full lifecycle.
 
-The two integration commands above (`gang-import`, `gang-escalate`) require the Gang plugin installed at `~/.claude/plugins/marketplaces/gang-marketplace/` and a Gang evaluation that has reached at least the `advise` stage.
+The two integration commands above (`gang-import`, `gang-escalate`) require the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `ls -d ~/.claude/plugins/cache/*/gang/*/ ~/.copilot/installed-plugins/*/gang/ 2>/dev/null`) and a Gang evaluation that has reached at least the `advise` stage.
 
 ## Subcommand Router
 

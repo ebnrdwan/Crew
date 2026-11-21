@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.5.3] — 2026-11-21
+
+### Fixed
+- **Gang hand-off works wherever Gang is installed.** `/crew gang-import`, `/crew gang-escalate` and the `gang-bridge`
+  agent no longer require Gang at one marketplace's Claude path; they look for Gang in the current client (Claude Code or
+  GitHub Copilot) from any marketplace.
+- Phase setup no longer copies a `current-phase.yaml` template the plugin never shipped; it creates the file at Phase 1.
+- `pm-maestro-reviewer` keeps its memory in the project (`.crew/agent-memory/`), not in a fixed home-folder path.
+
+### Changed
+- Descriptions, README and docs present Crew on its own; the licence keeps the original MIT copyright notice.
+
+### Verified (2026-11-21)
+- `/crew drive` ran end to end on a sample feature in Claude Code 2.1.267 and GitHub Copilot CLI 1.0.112.
+
+---
+
 ## [0.5.2] — 2026-11-21
 
 Makes all 20 agents load in GitHub Copilot CLI as well as Claude Code.
@@ -106,7 +123,7 @@ Substantial expansion past the initial fork. Adds GitHub Projects integration wi
 
 ## [0.1.0] — 2026-05-07
 
-Initial fork of [archflow v1.2.3](https://github.com/azidan/archflow) with Gang plugin integration and additional workflow commands.
+Initial release: phase-based development with Gang plugin integration and workflow commands.
 
 ### Added — Gang integration
 - **`/crew gang-import <slug>`** — read a Gang evaluation's GO Package and seed `roadmap.yaml` with a feature entry. Preserves CONDITIONAL-GO conditions verbatim as `phase-3` gates.
@@ -114,7 +131,7 @@ Initial fork of [archflow v1.2.3](https://github.com/azidan/archflow) with Gang 
 - **`gang-bridge` agent** — handles all state translation between `.gang/` and `.crew/` directories. Imports GO Packages, builds escalation briefs, writes back `crew_import` blocks to Gang state, maintains audit logs.
 - **`plugin/skills/crew/references/gang-integration.md`** — full lifecycle documentation showing when to use Gang vs Crew vs both.
 
-### Added — Workflow commands (originally added to the user's archflow runtime, brought into the Crew fork)
+### Added — Workflow commands
 - **`/crew drive [name]`** — end-to-end product-led feature development: pm-architect → implementation → QA → gap audit.
 - **`/crew deploy [flags]`** — pre-deployment checklist with auto-remediation. Verifies env, runs health checks, dispatches fix agents.
 - **`/crew gaps [url]`** — gap-finder audit and fix pipeline. Audits a URL, analyses gaps, creates fixes, verifies.
@@ -122,24 +139,5 @@ Initial fork of [archflow v1.2.3](https://github.com/azidan/archflow) with Gang 
 - **`gap-finder` agent** — runs UI gap audits referenced by `/crew gaps`.
 - **`pm-architect` agent** — drives product analysis at the start of `/crew drive`.
 
-### Changed — fork-wide rebranding
-- All 17 upstream archflow agents copied unchanged except for text rebranding (`archflow → crew`, `Archflow → Crew`, `ARCHFLOW → CREW`, `.archflow/ → .crew/`, `/archflow → /crew`).
-- Plugin manifest (`plugin/.claude-plugin/plugin.json`):
-  - `name: archflow` → `name: crew`
-  - `version: 1.2.3` → `version: 0.1.0` (reset for the fork)
-  - Added `upstream` block tracking fork point
-  - Added `keywords` to surface the gang integration
-- Project state directory renamed `.archflow/` → `.crew/` so a project can have both `.gang/` and `.crew/` side by side without ambiguity.
-- Slash command renamed `/archflow` → `/crew`.
-
-### Removed
-- archflow-specific marketing assets in `docs/` (landing page, LinkedIn launch post, archflow overview SVG) — Crew will produce its own when ready.
-
-### Preserved (intentional)
-- All URLs pointing to `https://github.com/azidan/archflow` are unchanged so the upstream attribution stays intact.
-- LICENSE file is unchanged (MIT, original copyright on AZidan).
-- Phase definitions in `plugin/.crew/phases/` and `plugin/skills/crew/phases/` are byte-identical to upstream apart from `archflow → crew` text replacement.
-
 ### Compatibility
 - **Gang plugin**: requires v1.3.0 or newer (the version that introduced GO Package generation, `github_push` state, and `default_card_type` in config).
-- **archflow upstream**: not currently merged-back. Future archflow releases can be merged into Crew via `git merge upstream/main` followed by re-running the rebrand script. The fork is small and the agent files match exactly.

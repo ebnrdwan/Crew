@@ -8,7 +8,7 @@ When `/crew gang-import <slug>` runs, the `gang-bridge` agent has to decide whic
 
 ## Why a contract is needed
 
-Crew was forked from archflow before Gang existed. Gang grew its own deliverables independently. Both systems then needed BRDs, architecture docs, API contracts, personas — because every dev workflow does. The result: **six artifact types are produced by agents in both systems.**
+Crew's engineering pipeline predates Gang. Gang grew its own deliverables independently. Both systems then needed BRDs, architecture docs, API contracts, personas — because every dev workflow does. The result: **six artifact types are produced by agents in both systems.**
 
 Without an explicit contract, two failure modes happen:
 - **Double work** — `pm-architect` re-derives the BRD that Gang's CEO/CTO Advisor already wrote.

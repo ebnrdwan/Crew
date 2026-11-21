@@ -135,7 +135,7 @@ Both systems produce BRDs, architecture docs, API contracts, personas, design to
 
 Full lifecycle docs: **[gang-integration.md](plugin/skills/crew/references/gang-integration.md)**
 
-**Requirements:** Gang plugin v1.3.0+ installed at `~/.claude/plugins/marketplaces/gang-marketplace/`.
+**Requirements:** Gang plugin v1.3.0+ installed in the same client (Claude Code or GitHub Copilot), from any marketplace.
 
 ---
 
@@ -280,23 +280,6 @@ Crew detects and adapts to project type — phase instructions, agent selection,
 
 ---
 
-## Differences from archflow
-
-Crew is a deliberate fork of [archflow v1.2.3](https://github.com/azidan/archflow). The fork is **strictly additive**:
-
-| Area | archflow 1.2.3 | crew 0.5.1 |
-|---|---|---|
-| Slash command | `/archflow` | `/crew` |
-| State directory | `.archflow/` | `.crew/` (lets Crew + Gang coexist) |
-| Subcommands | `init`, `onboard`, `feature`, `setup-mcp` | + `drive`, `deploy`, `gaps`, `features`, `gang-import`, `gang-escalate` |
-| Agents | 17 engineering agents | + `gap-finder`, `pm-architect`, `gang-bridge` (20 total) |
-| Gang integration | manual copy/paste | first-class via `gang-bridge` agent |
-| CONDITIONAL-GO gating | documented only | enforced — phase-3 won't unlock until conditions validated |
-
-If you don't need Gang integration or the new commands, [archflow upstream](https://github.com/azidan/archflow) is the simpler choice.
-
----
-
 ## Documentation
 
 - **[docs/index.html](docs/index.html)** — landing page with full visual overview
@@ -308,4 +291,4 @@ If you don't need Gang integration or the new commands, [archflow upstream](http
 
 ## License
 
-MIT — fork modifications © ebnrdwan, original work © AZidan. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

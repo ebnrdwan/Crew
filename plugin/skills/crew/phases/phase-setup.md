@@ -53,7 +53,7 @@ elif [[ -f ".crew/current-feature.yaml" ]]; then
   Create: .crew/current-phase.yaml based on inference
 else
   # New project - start from Phase 1
-  cp ~/.claude/.crew/current-phase.yaml ./.crew/current-phase.yaml
+  Create: .crew/current-phase.yaml at Phase 1
 fi
 ```
 

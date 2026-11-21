@@ -272,7 +272,7 @@ Record useful patterns in your agent memory:
 
 # Persistent Agent Memory
 
-You have a persistent agent memory directory at `/Users/azidan/.claude/agent-memory/pm-maestro-reviewer/`. Its contents persist across conversations.
+You have a persistent agent memory directory at `.crew/agent-memory/pm-maestro-reviewer/` (in the project). Its contents persist across conversations.
 
 Guidelines:
 - `MEMORY.md` is always loaded into your system prompt (keep under 200 lines)
