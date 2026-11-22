@@ -12,7 +12,7 @@ technical architecture, risk register, and CONDITIONAL-GO conditions.
 
 ## Prerequisites
 
-1. **Gang plugin installed** and available: the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `ls -d ~/.claude/plugins/cache/*/gang/*/ ~/.copilot/installed-plugins/*/gang/ 2>/dev/null`).
+1. **Gang plugin installed** and available: the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `find ~/.claude/plugins/cache ~/.copilot/installed-plugins -path '*/skills/gang/SKILL.md' 2>/dev/null`).
 2. **Gang evaluation completed** through at least the `advise` stage. `deliver` is preferred (gives full GO Package).
 3. **Crew initialised** in the project — `.crew/roadmap.yaml` exists.
 
@@ -38,9 +38,14 @@ and ask the user to pick.
 
 ### Step 2: Verify the evaluation is push-ready
 
-Read `state.json` and confirm:
-- `"advise"` is in `stages_completed` (else suggest the user run `/gang advise` first)
-- `verdict` is `GO` or `CONDITIONAL-GO` (refuse to import a `NO-GO`)
+Confirm both:
+- `state.json`: `"advise"` is in `stages_completed` (else suggest the user run `/gang advise` first).
+- The verdict, read from **`executive-brief.md`** in the same folder. `state.json` has no verdict field; Gang writes
+  the verdict in the brief's verdict section (for example a `## Verdict` heading with a table, or a
+  `### Verdict: CONDITIONAL-GO ...` line). It is `GO`, `CONDITIONAL-GO` or `NO-GO`. When the brief splits the decision
+  (for example "the validation sprint is CONDITIONAL-GO, the full build is NO-GO"), import only what is GO or
+  CONDITIONAL-GO and say which part. Refuse when everything is `NO-GO`. If the brief is missing, or the verdict cannot
+  be read from it, stop and ask the user rather than guessing.
 
 ### Step 3: Read the GO Package (if deliver completed)
 
@@ -62,48 +67,51 @@ If `deliver` was NOT run, fall back to:
 
 Tell the user the package is partial and recommend running `/gang deliver` first for richer import.
 
-### Step 4: Build the feature entry
+### Step 4: Build the epic and its stories
 
-Use the Gang evaluation to populate a new entry under `roadmap.yaml.features`:
+Crew's roadmap is `roadmap.epics[].stories[]` (schema: the Crew plugin's `.crew/schemas/roadmap-schema.yaml`; there is
+no `features` list). Add **one new epic** for the evaluation, with the next free epic number, and one story per
+deliverable the GO Package names (from `go-package/brd.md` requirements, grouped into stories; without a GO Package,
+one story per in-scope item of `executive-brief.md`):
 
 ```yaml
-features:
-  - id: <slug>
-    title: <evaluation_name from Gang state.json, prettified>
-    source:
-      origin: gang
-      session_id: <gang session_id>
-      gang_card_url: <state.json.github_push.project_item_url if present>
-      verdict: <CONDITIONAL-GO|GO>
-      verdict_score: <weighted_average from scored-plans.md>
-      conditions: <list of CONDITIONAL-GO conditions, copied verbatim>
-    epic: <inferred or asked>
-    description: |
-      <executive summary, 3-4 sentences from executive-brief.md>
-    acceptance_criteria:
-      - <copy from go-package/brd.md acceptance criteria, or executive brief if no GO Package>
-    risks:
-      - <top 3 risks, copied from executive brief>
-    kill_switches:
-      - <kill switches, copied verbatim>
-    estimated_size: <S|M|L|XL — pulled from Gang's own scope estimate; check state.json.github_push.fields_applied.size>
-    estimated_priority: <P1|P2|P3 — from gang state.json.github_push.fields_applied.priority>
-    phase_status:
-      "phase-1-strategy": skip   # gang already covered strategy
-      "phase-2-design": pending
-      "phase-2.5-api": pending
-      "phase-3-implementation": pending
-      "phase-4-quality": pending
-      "phase-5-launch": pending
-    notes: |
-      Strategy phase covered by Gang evaluation. CONDITIONAL-GO conditions
-      (above) MUST be cleared before promoting to phase-3-implementation.
+roadmap:
+  epics:
+    - id: E<next>                       # next free epic number
+      name: <evaluation_name from Gang state.json, prettified>
+      scope: <backend|frontend|mobile|both|unknown>   # the work's true scope
+      source:                           # Gang provenance (extra field, kept with the epic)
+        origin: gang
+        slug: <slug>
+        session_id: <gang session_id>
+        gang_card_url: <state.json.github_push.project_item_url if present>
+        verdict: <GO|CONDITIONAL-GO>    # from executive-brief.md
+        verdict_score: <weighted_average from scored-plans.md>
+        conditions: <list of CONDITIONAL-GO conditions, copied verbatim>
+        kill_switches: <kill switches, copied verbatim>
+        risks: <top 3 risks from the executive brief>
+      stories:
+        - id: S<epic number>-01
+          title: <short title>
+          priority: <Critical|High|Medium|Low>   # from Gang's priority (P1 -> High, P2 -> Medium, P3 -> Low)
+          status: backlog
+          assigned: <agent that will build it, e.g. ui-engineer, api-engineer>
+          description: |
+            <what to build, from the GO Package or executive brief>
+          acceptance_criteria:
+            - text: <criterion from go-package/brd.md, or the executive brief>
+              met: false
+          subtasks: []
 ```
+
+Strategy is covered by the Gang evaluation: when the next phase is planned, these stories start at design. While
+`source.verdict` is `CONDITIONAL-GO`, its `conditions` must be cleared before any of the epic's stories enter
+`phase-3-implementation`.
 
 ### Step 5: Append to roadmap & ask for confirmation
 
 Show the user the proposed entry and ask:
-> "Add this to `.crew/roadmap.yaml`? [yes / let me edit / cancel]"
+> "Add this epic to `.crew/roadmap.yaml` (under `roadmap.epics`)? [yes / let me edit / cancel]"
 
 On `yes` → append; on `let me edit` → write to a temp file, open it for review;
 on `cancel` → exit cleanly.

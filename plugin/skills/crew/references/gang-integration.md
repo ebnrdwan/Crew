@@ -39,7 +39,7 @@ Crew and Gang are two complementary plugins. Each does one thing well; together 
 | `.gang/features/<slug>/state.json#github_push` | Where the Gang verdict was published (project board) |
 | `.gang/features/<slug>/state.json#crew_import` | (NEW) Set when `/crew gang-import` consumes the evaluation |
 | `.crew/roadmap.yaml` | Crew's master feature backlog |
-| `.crew/roadmap.yaml#features[].source.origin` | Set to `gang` for imported features |
+| `.crew/roadmap.yaml#roadmap.epics[].source.origin` | Set to `gang` on the epic an import creates |
 | `.crew/imports.yaml` | Audit log of all Gang→Crew handoffs |
 | `.crew/features/<slug>/` | Crew's per-feature execution artifacts (phase outputs) |
 | `.gang/features/<slug>/escalation-from-crew.md` | (NEW) Set when `/crew gang-escalate` sends a feature back to Gang |
@@ -80,7 +80,7 @@ For small features where a full Gang run is overkill, use `/crew feature` direct
 
 Gang very often returns CONDITIONAL-GO rather than unconditional GO. The conditions are *gating assumptions* — claims the committee couldn't verify before recommending the build.
 
-When Crew imports a CONDITIONAL-GO feature, it copies the conditions verbatim into `roadmap.yaml.features[<slug>].source.conditions`. **Crew's `phase-3-implementation` MUST NOT activate until those conditions are validated.**
+When Crew imports a CONDITIONAL-GO feature, it copies the conditions verbatim into the imported epic's `source.conditions` (`roadmap.epics[]`). **Crew's `phase-3-implementation` MUST NOT activate until those conditions are validated.**
 
 Treat CONDITIONAL-GO conditions like compile errors: they block the build. Each one needs:
 1. A named owner

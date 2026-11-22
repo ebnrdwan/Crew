@@ -36,7 +36,7 @@ Use `AskUserQuestion`:
 ### Step 3: Gather current state
 
 Collect from `.crew/`:
-- The original `roadmap.yaml.features[<id>]` block (full)
+- The epic's full block from `roadmap.yaml` (`roadmap.epics[]`, with its `source` and stories)
 - Phase artifacts: any `.crew/features/<id>/phase-N-*.md` files
 - Phase status (`phase_status` field) — which phases passed, which are stuck
 
@@ -105,17 +105,18 @@ Next steps:
 
 ### Step 6: Update Crew state
 
-In `.crew/roadmap.yaml`, mark the feature:
+In `.crew/roadmap.yaml`, mark the epic (found by its id or its `source.slug`):
 ```yaml
-features:
-  - id: <feature-id>
-    escalations:
-      - escalated_at: <ISO-8601>
-        reason: <reason>
-        gang_session_id: <id>
-        status: pending-gang-verdict
-    phase_status:
-      "phase-3-implementation": paused-for-gang-reeval
+roadmap:
+  epics:
+    - id: <epic-id>
+      escalations:
+        - escalated_at: <ISO-8601>
+          reason: <reason>
+          gang_session_id: <id>
+          status: pending-gang-verdict
+      phase_status:
+        "phase-3-implementation": paused-for-gang-reeval
 ```
 
 This freezes Crew progression until Gang's new verdict is imported.

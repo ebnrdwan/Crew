@@ -12,7 +12,8 @@ Onboard an existing codebase to the phase-based development framework. Three-pha
 - The project should have existing source code (otherwise use Phase 1 setup normally)
 
 ## Detailed Rules
-Load `.crew/phases/phase-onboarding.md` for audit logic, project type detection, extraction rules, structured output schemas, agent prompt templates, and synthesis rules.
+Load `phase-onboarding.md` (the project's `.crew/phases/phase-onboarding.md` if it exists, otherwise the plugin's copy;
+see "Plugin files and project files" in the crew skill) for audit logic, project type detection, extraction rules, structured output schemas, agent prompt templates, and synthesis rules.
 
 ---
 

@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.5.4] — 2026-11-22
+
+### Fixed (from review)
+- **`/crew gang-import` reads Gang's verdict from `executive-brief.md`.** Gang's `state.json` has no verdict field, so the
+  old check could reject a completed evaluation. Split verdicts (part CONDITIONAL-GO, part NO-GO) import only the
+  GO / CONDITIONAL-GO part.
+- **Imports write the canonical roadmap shape:** one epic with stories under `roadmap.epics` (schema:
+  `.crew/schemas/roadmap-schema.yaml`), not a top-level `features` list. Gang provenance (verdict, conditions, kill
+  switches) is kept in the epic's `source` block. `gang-escalate` and `gang-bridge` find the epic by id or Gang slug.
+- **Plugin files are read from the plugin when the project has no copy.** Phase rules, schemas, `workflow.md` and
+  `instructions.md` ship with the plugin; commands such as `/crew onboard` pointed at project paths that do not exist.
+  The `SessionStart` hook falls back to the plugin's `instructions.md`.
+- **Plugin lookups work in zsh as well as bash** (`find` instead of `ls` with patterns, which zsh stops on when a
+  pattern matches nothing).
+
+---
+
 ## [0.5.3] — 2026-11-21
 
 ### Fixed

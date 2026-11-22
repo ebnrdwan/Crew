@@ -7,6 +7,22 @@ description: Phase-based development workflow manager that guides projects throu
 
 Crew manages the full software development lifecycle through structured phases, from onboarding existing codebases to launching production software.
 
+## Plugin files and project files
+
+`.crew/` in the **project** holds the project's state (`roadmap.yaml`, `current-phase.yaml`, `current-feature.yaml`,
+`project-context.md`, feature folders). The **reference files ship with the plugin** and are not copied into projects:
+the phase rules, the schemas, `workflow.md`, `instructions.md` and `base-dsl-structure.yaml`.
+
+Wherever a command, phase or agent names one of these as `.crew/phases/<file>`, `.crew/schemas/<file>`,
+`.crew/workflow.md`, `.crew/instructions.md` or `.crew/base-dsl-structure.yaml`, read it like this:
+1. the project's own copy at that path, if it exists (a team may override a file);
+2. otherwise the plugin's copy under `{crew_root}/.crew/` (phase files are also in `{crew_root}/skills/crew/phases/`).
+
+`{crew_root}` is the Crew plugin folder: `${CLAUDE_PLUGIN_ROOT}` when set (Claude Code); otherwise two folders up from
+this skill's folder; otherwise the first of
+`find ~/.claude/plugins/cache ~/.copilot/installed-plugins -path '*/skills/crew/SKILL.md' 2>/dev/null`, three levels up
+(GitHub Copilot does not set `${CLAUDE_PLUGIN_ROOT}`; `find` works the same in bash and zsh).
+
 ## Usage
 ```
 /crew                         → Show available subcommands
@@ -39,7 +55,7 @@ Crew manages the full software development lifecycle through structured phases, 
 
 Crew integrates with the **Gang multi-agent committee plugin**. Gang evaluates whether to build something; Crew executes the build. See `references/gang-integration.md` for the full lifecycle.
 
-The two integration commands above (`gang-import`, `gang-escalate`) require the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `ls -d ~/.claude/plugins/cache/*/gang/*/ ~/.copilot/installed-plugins/*/gang/ 2>/dev/null`) and a Gang evaluation that has reached at least the `advise` stage.
+The two integration commands above (`gang-import`, `gang-escalate`) require the Gang plugin installed in this client, from any marketplace (in Claude Code its agents are named `gang:*`; to find its folder: `find ~/.claude/plugins/cache ~/.copilot/installed-plugins -path '*/skills/gang/SKILL.md' 2>/dev/null`) and a Gang evaluation that has reached at least the `advise` stage.
 
 ## Subcommand Router
 

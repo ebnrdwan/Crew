@@ -48,7 +48,7 @@ Triggered by `/crew gang-import <slug>`.
 6. **Confirm with the user** before writing to `.crew/roadmap.yaml`. Show the proposed entry; offer yes / edit / cancel.
 
 7. **On confirmation**:
-   - Append entry to `.crew/roadmap.yaml.features`
+   - Append the epic (with its stories) to `.crew/roadmap.yaml` under `roadmap.epics` (canonical schema: no `features` list)
    - Append audit row to `.crew/imports.yaml` (create file if missing)
    - Write back `crew_import` block to the Gang `state.json` to close the loop
 
@@ -62,8 +62,8 @@ Triggered by `/crew gang-escalate <feature-id>`.
 
 1. **Locate the Crew feature**:
    - Read `.crew/roadmap.yaml`
-   - Find `features[].id == <feature-id>`
-   - If not found, list available features
+   - Find the epic whose `id` is the argument, or whose `source.slug` is (a Gang slug)
+   - If not found, list the epics that came from Gang (`source.origin == "gang"`)
 
 2. **Determine escalation reason** via `AskUserQuestion`:
    - Scope creep
@@ -73,7 +73,7 @@ Triggered by `/crew gang-escalate <feature-id>`.
    - Other (free text)
 
 3. **Gather state**:
-   - Original `roadmap.yaml.features[<id>]` block
+   - The epic's block in `roadmap.yaml` (`roadmap.epics[]`, with its `source` and stories)
    - All artifacts under `.crew/features/<id>/phase-*.md`
    - `phase_status` map showing which phases passed/blocked/pending
 
@@ -104,8 +104,8 @@ Triggered by `/crew gang-escalate <feature-id>`.
 
 - **Multiple Gang sessions for the same slug** (after `/gang reinit`): use the latest by `pushed_at` if a `github_push` exists, else by `last_reinit`, else by `started_at`.
 - **Gang verdict is NO-GO**: refuse import. Output why and suggest `/gang reinit` if the user thinks the verdict is stale.
-- **Crew feature already imported from Gang**: detect via `roadmap.yaml.features[].source.origin == "gang"`. If re-importing the same slug, ask whether to overwrite, append a v2 entry, or cancel.
-- **Gang plugin not installed**: the user is running `/crew gang-import` but no Gang plugin is installed in this client (no `gang:*` agents, and `ls -d ~/.claude/plugins/cache/*/gang/*/ ~/.copilot/installed-plugins/*/gang/` finds nothing). Tell them to install Gang first; offer the install command.
+- **Crew feature already imported from Gang**: detect via `roadmap.epics[].source.origin == "gang"` and the same `source.slug`. If re-importing the same slug, ask whether to overwrite, append a v2 entry, or cancel.
+- **Gang plugin not installed**: the user is running `/crew gang-import` but no Gang plugin is installed in this client (no `gang:*` agents, and `find ~/.claude/plugins/cache ~/.copilot/installed-plugins -path '*/skills/gang/SKILL.md' 2>/dev/null` finds nothing). Tell them to install Gang first; offer the install command.
 - **Partial GO Package** (deliver didn't run): proceed with executive-brief + scored-plans, but flag in the imported entry's `notes` field that the import was partial and recommend running `/gang deliver` then re-importing.
 
 ---
