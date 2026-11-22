@@ -73,10 +73,10 @@ fix:
 ## Step 1 — Profile + budget check
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   --feature-description "fix: {description}"
 
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type code_reviewer \
   --feature-id {bug_id} \
   --phase 3 \
@@ -353,7 +353,7 @@ After all engineers complete, validate that EVERY site in `fix.scope.adjacent_in
 ## Step 7 — Verify (qa-engineer)
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type qa_engineer \
   --feature-id {bug_id} \
   --phase 4 \
@@ -527,7 +527,7 @@ If `config.github.update_body_on_phase_change: true`, also rewrite the bug card 
 
 Same as drive's Completion step, with the impact report referenced in the commit message:
 
-1. Ask user: "Ready to merge `fix/{bug_id}` to main?"
+1. Ask user (AskUserQuestion in Claude Code, a plain question in GitHub Copilot): "How should `fix/{bug_id}` land? [Open a pull request (recommended) / Merge locally into main / Keep the branch]". Push, merge into main, and branch deletion each need their own yes, as in `workflow.md` ("Git safety").
 2. Compose the merge commit message including a condensed impact summary:
    ```
    fix({bug_id}): {one-line summary}

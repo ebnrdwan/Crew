@@ -21,12 +21,12 @@
 #   create:
 #     ./github-project-sync.sh create \
 #       --title          "[Crew][Feature] login: PHASE 1" \
-#       --body-file      /tmp/crew-card.md \
+#       --body-file      "$BODY_FILE"   # from mktemp \
 #       --project-number 5 \
 #       --project-node-id PVT_kwDO... \
 #       --status-field-id PVTSSF_lADO... \
 #       --status-option-id f75ad846-... \
-#       [--owner ebnrdwan]   (default: auto-detect)
+#       [--owner <owner>]   (default: auto-detect)
 #       [--assignee user]
 #       [--priority P1]
 #       [--size S]

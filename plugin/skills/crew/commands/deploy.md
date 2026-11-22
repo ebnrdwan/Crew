@@ -27,20 +27,45 @@ Full-stack deployment checklist with agent-powered auto-remediation and observat
 3. Read `.crew/project-context.md` for deployment context
 4. Read `.crew/roadmap.yaml` to check for deployment-related stories
 
-### Step 1: Run Checklist Script
+### Step 1: Run the Checklist
 
-Execute the deploy checklist script:
+Crew does not ship a checklist script. Use the project's own script when it has one, otherwise run the checklist
+inline.
+
+**1a. Project script.** If `scripts/deploy_checklist.sh` exists in the project root, run it:
 ```bash
 bash scripts/deploy_checklist.sh --json {pass through user flags}
 ```
+and parse its JSON output (`{category, check, status: pass|fail|skip, error}` per check) into structured results.
 
-If the script doesn't exist at `scripts/deploy_checklist.sh`:
+**1b. No project script — run the checklist inline.** Tell the user:
 ```
-Deploy checklist script not found. This is required for /crew deploy.
-The script should exist at scripts/deploy_checklist.sh in the project root.
+No scripts/deploy_checklist.sh in this project. Running Crew's built-in checklist inline.
+(Offer: scaffold scripts/deploy_checklist.sh from these checks so the team can run it in CI? [Yes / No])
 ```
+Then run each check below that applies to the project (detect from `.crew/project-context.md`, `package.json`,
+`docker-compose*.yml`, `Dockerfile`, test config), and record each as pass / fail / skip with its error. Honour
+`--phase`, `--skip-build` and `--skip-tests`.
 
-Parse the JSON output into structured results.
+*Phase 1 — pre-deploy checks*
+| Category | Check |
+|----------|-------|
+| `env` | Every variable named in `.env.example` (or the project's config docs) is set for the target environment; no default or placeholder secrets (e.g. `changeme`, `secret`, `SECRET_KEY=dev`) |
+| `security` | No secrets committed (scan tracked files for keys/tokens); dependency audit (`npm audit --omit=dev`, `pip-audit`, or the stack's equivalent) has no critical findings |
+| `git` | Working tree clean; current branch is the one being released; tag/version bumped if the project uses them |
+| `frontend` | Production build succeeds (`npm run build` or the project's build command) — skip with `--skip-build` |
+| `backend` | Test suite passes (the project's test command) — skip with `--skip-tests` |
+| `docker` | `docker compose config` validates; images build (`docker compose build`) when Docker is used |
+
+*Phase 2 — service health checks* (only when the services can be started locally or a staging URL is known)
+| Category | Check |
+|----------|-------|
+| `containers` | `docker compose up -d` starts every service and none is restarting |
+| `api` | Health endpoint (from `docs/api-contract.md` or project context, e.g. `/health`) returns 200; one read endpoint returns the contracted shape |
+| `frontend` | The built app serves its index page |
+
+If the user chose to scaffold the script, write `scripts/deploy_checklist.sh` with exactly these checks (emitting the
+JSON shape above), show it, and ask before keeping it. Never overwrite an existing script.
 
 ### Step 2: Present Results
 
@@ -70,13 +95,13 @@ For each failure category, dispatch the appropriate crew agent:
 
 | Failure Category | Agent | Dispatch Prompt |
 |-----------------|-------|-----------------|
-| Build/compile errors | `build-error-resolver` | "Deploy checklist found build failure: {error}. Fix the build error in {project root}. Read the relevant source files and fix the issue." |
+| Build/compile errors | `ui-engineer` (frontend) or `api-engineer` (backend) | "Deploy checklist found build failure: {error}. Fix the build error in {project root}. Read the relevant source files and fix the issue." |
 | Test failures | `qa-engineer` | "Deploy checklist found test failures: {error}. Investigate and fix the failing tests. Project: {project root}." |
-| Security issues (`env`, `security`) | `security-reviewer` | "Deploy checklist found security issue: {error}. Scan for secrets, insecure defaults, and fix. Project: {project root}." |
-| Infrastructure (`docker`, `containers`) | `devops-engineer` | "Deploy checklist found infrastructure issue: {error}. Fix Docker/compose configuration. Compose file: backend/docker-compose.yml." |
-| Frontend build | `ui-engineer` | "Deploy checklist found frontend build failure: {error}. Fix the build error in frontend/. Run npm run build to verify." |
-| API health failures | `api-engineer` | "Deploy checklist found API health failure: {error}. Debug the endpoint issue. Backend entry: backend/api/main.py." |
-| ML model issues | — | Flag for manual review. Print: "ML model issues require manual investigation. Known bugs: cluster mapping, single-sample normalization." |
+| Security issues (`env`, `security`) | `code-reviewer` (security review) | "Deploy checklist found security issue: {error}. Scan for secrets, insecure defaults, and propose fixes. Project: {project root}." |
+| Infrastructure (`docker`, `containers`) | `devops-engineer` | "Deploy checklist found infrastructure issue: {error}. Fix the Docker/compose configuration ({compose file found in the project})." |
+| Frontend build | `ui-engineer` | "Deploy checklist found frontend build failure: {error}. Fix the build error in {frontend folder}. Run the build command to verify." |
+| API health failures | `api-engineer` | "Deploy checklist found API health failure: {error}. Debug the endpoint issue. Backend entry: {backend entry point from project context}." |
+| Anything else | — | Flag for manual review and list it under blockers. |
 
 **Agent dispatch rules:**
 - Provide context from `.crew/project-context.md` and `.crew/current-phase.yaml`
@@ -96,10 +121,8 @@ Present failures and ask:
 
 ### Step 4: Re-verify
 
-After agent fixes complete, re-run the checklist:
-```bash
-bash scripts/deploy_checklist.sh --json {same phase flags}
-```
+After agent fixes complete, re-run the checklist the same way as Step 1 (the project script with the same flags, or
+the inline checks).
 
 Present updated results. If new failures appear, repeat Step 3.
 
@@ -118,12 +141,12 @@ summary:
   failed: 0
   skipped: 3
 blockers: []  # List of unresolved failures
-  # - category: "ml"
-  #   check: "Model file: regime_detector.pkl"
-  #   error: "File exists but suspiciously small"
+  # - category: "env"
+  #   check: "SECRET_KEY is not default"
+  #   error: "Still using the default insecure key"
   #   severity: "high"
 agents_dispatched: []  # List of agents that were called
-  # - agent: "build-error-resolver"
+  # - agent: "ui-engineer"
   #   category: "frontend"
   #   result: "fixed"  # fixed | failed | skipped
   #   timestamp: "{ISO 8601}"
@@ -163,14 +186,7 @@ Status: {ready | blocked | partial}
 → Proceed with deployment? [Yes / Re-run / Stop]
 ```
 
-If user approves deployment, print:
-```
-Run deployment with:
-  bash scripts/fast_deploy.sh
-
-Or manually:
-  cd backend && docker compose up -d
-
-Then run post-deploy monitoring:
-  /crew deploy --phase 4
-```
+If user approves deployment, print the project's own deploy command (from `.crew/project-context.md`, a
+`scripts/deploy*.sh`, the CI workflow, or `docker compose up -d` when the project deploys with Compose). Crew does not
+run the deployment itself. Then suggest re-running `/crew deploy --phase 2` against the deployed environment for the
+health checks.

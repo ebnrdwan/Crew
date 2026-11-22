@@ -15,7 +15,7 @@ Audit a live application for UI gaps, analyze findings, create fix requirements,
 ## Prerequisites
 - `.crew/current-phase.yaml` must exist
 - `.crew/roadmap.yaml` must exist
-- Claude in Chrome MCP must be configured (required for gap-finder agent)
+- A browser MCP must be configured (required for gap-finder agent): Claude in Chrome or Chrome DevTools MCP
 - Target URL must be accessible
 
 ## Design Context (Impeccable Integration)
@@ -50,13 +50,15 @@ The gaps pipeline reads `.impeccable.md` from the project root and uses design p
    If missing → HALT: "Roadmap required. Run /crew onboard to generate one."
    ```
 
-3. **Claude in Chrome MCP?**
+3. **Browser MCP (Claude in Chrome or Chrome DevTools)?**
    ```
-   Check: Search for Chrome MCP tools (navigate, read_page, computer)
-   If not found → HALT:
-     "Gap-finder requires Claude in Chrome MCP to interact with web pages.
-      Please connect Claude in Chrome from the MCP tools menu, then try again."
+   Check: Search for Claude in Chrome tools (navigate, read_page, computer)
+          or Chrome DevTools MCP tools (navigate_page, take_snapshot, click)
+   If neither found → HALT:
+     "Gap-finder needs a browser MCP to interact with web pages: Claude in Chrome
+      or Chrome DevTools MCP. Please connect one, then try again."
    ```
+   Tell gap-finder which one is available.
 
 All checks passed → proceed to Step 1.
 

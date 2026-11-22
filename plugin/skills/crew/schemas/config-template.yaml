@@ -49,7 +49,7 @@ github:
   # Example after discovery:
   # - project_number: 5
   #   project_node_id: PVT_kwDO...
-  #   owner: ebnrdwan
+  #   owner: <owner>
   #   name: "Crew Roadmap"
   #   status_field_id: PVTSSF_lADO...
   #   logical_state_options:

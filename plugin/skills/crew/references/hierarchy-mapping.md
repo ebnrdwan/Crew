@@ -18,7 +18,7 @@ How Crew's 4-level hierarchy (epic → sprint → story → task) maps onto GitH
 | **Task** | Markdown checklist inside the card body | Tasks are how one engineer breaks down a story. Putting them on the board floods PM view with implementation detail. |
 | **Status** | Status field (mapped from current phase) | One logical Status per story, updated as phase advances. See `card-skeletons.md`. |
 | **Priority** | Custom Single-select field (P1 / P2 / P3) | Derived from RICE score or risk weight in roadmap. |
-| **Story Points** | Custom Number field (if board has one) | Optional; populated from roadmap.yaml#stories[].points if present. |
+| **Story Points** | Custom Number field (if board has one) | Optional; populated from `roadmap.epics[].stories[].points` if present (an extra field, not in the canonical schema). |
 | **Source** | Custom Text field | `manual` / `gang` / `gaps` — provenance, surface to stakeholders. |
 | **Parent Story** | Custom Text field with parent `feature_id` | For nested stories (sub-stories of a larger one); empty when story is top-level. |
 
@@ -138,7 +138,7 @@ A future v0.2 enhancement: auto-create missing Single-select options via `addPro
 
 ## Tasks: the checklist pattern
 
-Tasks live inside the story card body, in a section the skeleton produces from `roadmap.yaml#stories[{story_id}].tasks[]`:
+Tasks live inside the story card body, in a section the skeleton produces from `.crew/current-feature.yaml#tasks[]`, or, when that is empty, from the story's `subtasks[]` in the roadmap (`roadmap.epics[].stories[]` with `id: {story_id}`; each subtask is `text` + `completed`):
 
 ```markdown
 ## ✅ Tasks

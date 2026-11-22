@@ -20,13 +20,13 @@ Before starting, verify SuperDesign MCP tools are available:
 ```bash
 # Test tool availability by checking for superdesign_generate
 # If tools are NOT available, provide setup instructions:
-#   Add to MCP settings: npx -y github:AZidan/superdesign-mcp-claude-code
-# Or offer to skip directly to Phase 2.5
+#   SuperDesign MCP is an optional integration, not shipped with Crew: install it from its own
+#   documentation and pin a version. Or offer to skip directly to Phase 2.5
 ```
 
 If SuperDesign MCP is unavailable:
 1. Inform the user that hi-fi screen generation requires the SuperDesign MCP server
-2. Provide setup instructions: add `npx -y github:AZidan/superdesign-mcp-claude-code` to MCP config
+2. Explain that it is optional and not shipped with Crew: if they want it, install it from its own documentation and pin a version (Crew works without it)
 3. Offer to skip Phase 2.25 and proceed directly to Phase 2.5 (API Architecture)
 
 ## 🚀 Execution Steps

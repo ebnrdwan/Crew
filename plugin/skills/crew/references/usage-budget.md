@@ -5,7 +5,7 @@ When `/crew` is driving a feature through implementation, it can consume a lot o
 The **usage-aware checkpoint system** solves this. Crew estimates the cost of each upcoming operation, compares to a configurable budget, and when the next op would push past the stop threshold, it:
 
 1. **Saves a checkpoint** with the feature state and the next step that was about to run
-2. **Schedules a task** via `mcp__scheduled-tasks__create_scheduled_task` to fire `/crew resume {id}` after the rate-limit window plus a buffer
+2. **Schedules a task** via `mcp__scheduled-tasks__create_scheduled_task` to fire `/crew resume {id}` after the rate-limit window plus a buffer (when that optional tool is available; otherwise it tells you to run `/crew resume {id}` yourself)
 3. **Exits gracefully** instead of crashing mid-dispatch
 
 When the scheduled task fires, `/crew resume` reads the checkpoint, verifies the rate-limit window has actually rolled over, and continues from `next_step` as if nothing happened.
@@ -37,7 +37,7 @@ When the scheduled task fires, `/crew resume` reads the checkpoint, verifies the
 
 ## The two scripts
 
-### `plugin/scripts/crew-budget-check.sh`
+### `{crew_root}/scripts/crew-budget-check.sh`
 
 Pre-flight gate. Reads `.crew/config.yaml#usage` + `.crew/usage-state.yaml#session.estimated_tokens_used`. Looks up the op cost in `usage.op_costs[op_type]` (or uses `--op-cost` override). Outputs JSON; exit codes: `0=ok`, `1=warn`, `2=stop`, `3=error`.
 
@@ -47,12 +47,12 @@ When status is `stop`:
 - Emits `instructions_for_caller` telling the model exactly which `mcp__scheduled-tasks__create_scheduled_task` call to make
 - The **model is responsible** for actually invoking the MCP tool — the script doesn't have access to it
 
-### `plugin/scripts/crew-budget-log.sh`
+### `{crew_root}/scripts/crew-budget-log.sh`
 
 Post-flight logger. Called after a dispatch with the model's best estimate of actual tokens used:
 
 ```bash
-bash plugin/scripts/crew-budget-log.sh \
+bash {crew_root}/scripts/crew-budget-log.sh \
   --op-type ui_engineer_full_feature \
   --tokens 47000 \
   --feature-id user-auth \
@@ -152,7 +152,7 @@ Every command that dispatches a heavy agent should call `crew-budget-check.sh` i
 **Pre-dispatch budget check:**
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type ui_engineer_full_feature \
   --feature-id {feature_id} \
   --phase 3 \
@@ -161,13 +161,19 @@ bash {plugin_root}/scripts/crew-budget-check.sh \
 
 If the script exits 2 (stop), the JSON output contains `instructions_for_caller`. Read it; call `mcp__scheduled-tasks__create_scheduled_task` with the supplied `prompt` and `schedule`; exit gracefully.
 
+**No scheduled-tasks tool?** The scheduled-tasks MCP is optional and not shipped with Crew (GitHub Copilot and some
+Claude Code setups do not have it). If `mcp__scheduled-tasks__create_scheduled_task` is not available, do not try to
+schedule anything: the checkpoint is already written, so tell the user to resume manually —
+`Run /crew resume {checkpoint_id} after {schedule_at} (when your usage window has reset).` — and exit gracefully.
+
 If the script exits 1 (warn), proceed but consider light-mode dispatch.
-If the script exits 0 (ok), proceed.
+If the script exits 0 (ok), proceed. Exit 0 with `"status":"skipped"` means python3 with PyYAML is not installed: the
+scripts print a warning to stderr and do nothing, so the budget is not tracked; proceed.
 
 **After dispatch completes:**
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-log.sh \
+bash {crew_root}/scripts/crew-budget-log.sh \
   --op-type ui_engineer_full_feature \
   --tokens {model_estimate_of_actual_tokens} \
   --feature-id {feature_id} \

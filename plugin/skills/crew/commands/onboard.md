@@ -122,12 +122,14 @@ If `.onboard-progress.yaml` exists, read it and resume from the saved `wizard_ph
 1. Check: Is this a git repository? (`git rev-parse --is-inside-work-tree`)
    - If YES: Continue
    - If NO: Ask user "Initialize git? [Yes / No]"
-     - Yes: `git init && git add . && git commit -m "chore: initial commit before crew onboarding"`
+     - Yes: `git init` only. Do not stage or commit the existing code: tell the user to make their own first commit
+       of the files they want tracked (Crew never runs `git add .` or `git add -A`).
      - No: WARN and continue
 
-2. After onboarding creates `.crew/` files (end of Step C5), commit:
+2. After onboarding creates its files (end of Step C5), ask the user (AskUserQuestion in Claude Code, a plain question in GitHub Copilot) whether to commit them.
+   On a yes, stage only the exact paths Crew created or changed — never `git add .`:
    ```bash
-   git add .crew/
+   git add .crew/current-phase.yaml .crew/project-context.md .crew/roadmap.yaml CLAUDE.md   # plus any other file Crew wrote, listed by path
    git commit -m "chore: onboard to crew (Phase [N])"
    ```
 
@@ -149,7 +151,7 @@ All user input gathered in one pass. No heavy analysis, no agent dispatch.
 2. Detect tech stack from dependencies and file patterns
 3. Detect project type using rules from `.crew/phases/phase-onboarding.md`:
    - `fullstack` | `frontend_only` | `backend_only` | `mobile`
-4. Run `codemap init .` and `codemap stats` for codebase metrics
+4. If codemap is installed (`command -v codemap`), run `codemap init .` and `codemap stats` for codebase metrics; otherwise count files and lines with standard tools
 
 **Present to user:**
 ```
@@ -184,9 +186,7 @@ Present options:
 - **Notion** — Fetch pages by link
 - **Linear** — Fetch issues by link
 - **GitHub Issues** — Fetch issues by link
-- **Google Drive** — Fetch docs by link
-- **Trello** — Fetch cards by link
-- **Slack** — Fetch context from threads
+- **Google Drive / Trello / Slack / other** — only if you already have an MCP server for it (not in Crew's registry; `/crew setup-mcp` can search for one, unverified)
 - **Confluence** — Fetch documentation by link
 - **Local files** — Point to existing docs
 - **I'll describe it** — Answer questions conversationally
@@ -478,6 +478,11 @@ feature_status: "ready"
 status: "onboarded"
 ```
 
+**1b. Copy the session rules into the project:** if `.crew/instructions.md` does not exist, copy the plugin's template
+    `{crew_root}/.crew/instructions.md` to `.crew/instructions.md` (never overwrite an existing one — the team may have edited
+    it). In Claude Code, Crew's SessionStart hook prints this project file at the start of each session, so Crew's rules are
+    loaded only in projects that use Crew; a project without `.crew/instructions.md` gets nothing injected.
+
 2. **Create or update `CLAUDE.md` with Crew section:**
 
 If `CLAUDE.md` does NOT exist in the project root, create it with global project instructions derived from the onboarding analysis:
@@ -556,6 +561,7 @@ Current Phase: [N] ([Phase Name])
 
 Created:
   ✅ CLAUDE.md [created / updated with Crew section]
+  ✅ .crew/instructions.md [copied from the plugin / kept the existing one]
   ✅ project-context.md
   ✅ roadmap.yaml ([N] features)
   ✅ API contract: [path]

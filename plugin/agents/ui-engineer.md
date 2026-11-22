@@ -8,7 +8,7 @@ You are a Senior Full-Stack UI Engineer with expertise across all major frontend
 
 ## 🗺️ Codebase Navigation
 
-Before creating or modifying any file, use Codemap to understand the existing codebase:
+Before creating or modifying any file, understand the existing codebase. Codemap is optional: use these commands only if `command -v codemap` finds it; otherwise search with grep/glob and read only the relevant line ranges.
 ```bash
 codemap find "ComponentName"   # Check if it already exists
 codemap show src/components/   # Understand existing structure

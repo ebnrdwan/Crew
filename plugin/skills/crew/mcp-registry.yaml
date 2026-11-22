@@ -1,6 +1,7 @@
 # Curated MCP Server Registry
 # Referenced by /crew setup-mcp command — edit this file to add/update MCP servers
-# Last verified: 2026-03-12
+# Last verified: 2026-03-12 (Jira/Confluence, Notion, Linear, GitHub). Google Drive, Slack and Trello entries
+# were removed on 2026-11-22 because their package names / URLs could not be verified.
 
 registry:
   jira:
@@ -46,40 +47,13 @@ registry:
     purpose: "Fetch issues, PRs, project boards"
     onboarding_only: false
 
-  google-drive:
-    name: "Google Drive"
-    transport: stdio
-    command: "npx -y @anthropic/claude-code-google-drive"
-    auth: oauth
-    purpose: "Fetch Google Docs, Sheets by link"
-    onboarding_only: true
-
-  slack:
-    name: "Slack"
-    transport: http
-    url: "https://api.slack.com/mcp"
-    auth: oauth
-    purpose: "Fetch context from channels and threads"
-    onboarding_only: true
-
-  trello:
-    name: "Trello"
-    transport: stdio
-    command: "npx -y @modelcontextprotocol/server-trello"
-    env_required:
-      TRELLO_API_KEY:
-        description: "API key"
-        help_url: "https://trello.com/power-ups/admin"
-      TRELLO_TOKEN:
-        description: "Auth token"
-    purpose: "Fetch boards, lists, and cards"
-    onboarding_only: true
-
   superdesign:
-    name: "SuperDesign"
+    name: "SuperDesign (optional)"
     transport: stdio
-    command: "npx -y github:AZidan/superdesign-mcp-claude-code"
+    manual: true          # no install command here: Crew does not ship or pin it
     purpose: "Generate high-fidelity UI screens from styled-dsl.yaml (Phase 2.25)"
-    notes: "Required for Phase 2.25 (High-Fidelity Design). Must be installed before starting hi-fi screen generation."
+    notes: >
+      Optional. If you use a SuperDesign MCP server, install it from its own documentation and pin a version.
+      Crew works without it: Phase 2.25 is skipped (Phase 2 -> 2.5).
     onboarding_only: false
     phase: "2.25"

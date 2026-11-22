@@ -212,7 +212,7 @@ Write the updated `.crew/roadmap.yaml`. Confirm to user:
 Before pushing the card or starting Phase 3 dispatches, ensure tech knowledge levels are known:
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   --feature-description "{title} — {description}"
 ```
 
@@ -267,9 +267,9 @@ Follow the branching strategy from `.crew/workflow.md`:
    git checkout main
    git pull origin main
    git checkout -b {feature-branch-name}
-   git push -u origin {feature-branch-name}
    ```
    - Branch name: kebab-case of feature name (e.g., `user-notifications`)
+   - Ask the user (AskUserQuestion in Claude Code, a plain question in GitHub Copilot) before publishing it with `git push -u origin {feature-branch-name}`; push only after a yes.
 
 2. **Update `.crew/current-phase.yaml`:**
    ```yaml
@@ -327,8 +327,8 @@ For each task in `.crew/current-feature.yaml`:
    git checkout {feature-branch}
    git pull origin {feature-branch}
    git checkout -b {feature}/{task-name}
-   git push -u origin {feature}/{task-name}
    ```
+   Push it (`git push -u origin {feature}/{task-name}`) only after the user says yes.
 
 2. **Update `.crew/current-feature.yaml`:** Set task status to `in_progress`, record branch name.
 
@@ -340,10 +340,11 @@ For each task in `.crew/current-feature.yaml`:
 
 4. **Build and test locally** (per workflow.md testing checklist)
 
-5. **Commit and push:**
+5. **Commit, then ask before pushing:**
    ```bash
-   git add {specific files}
+   git add {specific files}          # exact paths only, never `git add .`
    git commit -m "feat: {description}"
+   # push only after the user says yes:
    git push -u origin {feature}/{task-name}
    ```
 
@@ -354,10 +355,10 @@ For each task in `.crew/current-feature.yaml`:
    git checkout {feature-branch}
    git pull origin {feature-branch}
    git merge {feature}/{task-name}
-   git push origin {feature-branch}
-   git branch -d {feature}/{task-name}
-   git push origin --delete {feature}/{task-name}
    ```
+   Then ask (AskUserQuestion in Claude Code, a plain question in GitHub Copilot) before each of: pushing the feature branch
+   (`git push origin {feature-branch}`), deleting the local task branch (`git branch -d {feature}/{task-name}`), and
+   deleting the remote one (`git push origin --delete {feature}/{task-name}`). Deleting is optional.
 
 8. **Update `.crew/current-feature.yaml`:** Mark task as `complete`.
 
@@ -365,18 +366,25 @@ For each task in `.crew/current-feature.yaml`:
 
 After ALL tasks are complete and approved:
 
-1. **Merge feature to main** (with user approval):
-   ```bash
-   git checkout main
-   git pull origin main
-   git merge {feature-branch}
-   git push origin main
-   ```
+1. **Land the feature — ask the user how** (AskUserQuestion in Claude Code, a plain question in GitHub Copilot):
+   - **Open a pull request (recommended):** after a yes to pushing the branch,
+     ```bash
+     git push -u origin {feature-branch}
+     gh pr create --base main --head {feature-branch} --title "feat: {title}" --body "{summary and test plan}"
+     ```
+   - **Merge locally into main** (only if the user picks it):
+     ```bash
+     git checkout main
+     git pull origin main
+     git merge {feature-branch}
+     ```
+     Pushing `main` (`git push origin main`) is a separate question; push only after a yes.
+   - **Leave it** on the feature branch.
 
-2. **Cleanup:**
+2. **Cleanup (optional — ask first):** only on a yes, and only after the PR is merged or the local merge is done:
    ```bash
    git branch -d {feature-branch}
-   git push origin --delete {feature-branch}
+   git push origin --delete {feature-branch}   # needs its own yes
    ```
 
 3. **Update files:**
@@ -390,6 +398,6 @@ After ALL tasks are complete and approved:
 - Story IDs follow the pattern `S{epic}-{seq}` (e.g., S1-01, S2-03) and are auto-incremented under their epic
 - Epic IDs follow the pattern `E{N}` (e.g., E1, E2) and are auto-incremented
 - The `/crew feature` command can be run at any time, not just during Phase 3
-- Git operations always require explicit user approval before merging
+- Git operations always require explicit user approval before merging, pushing, or deleting branches; prefer a pull request over pushing to main
 - The roadmap follows the canonical schema at `.crew/schemas/roadmap-schema.yaml`
 - The task-level git workflow (Step 4) is executed during Phase 3, referenced here for completeness

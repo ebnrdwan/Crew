@@ -69,7 +69,7 @@ Tell the user the package is partial and recommend running `/gang deliver` first
 
 ### Step 4: Build the epic and its stories
 
-Crew's roadmap is `roadmap.epics[].stories[]` (schema: the Crew plugin's `.crew/schemas/roadmap-schema.yaml`; there is
+Crew's roadmap is `roadmap.epics[].stories[]` (schema: `{crew_root}/skills/crew/schemas/roadmap-schema.yaml`; there is
 no `features` list). Add **one new epic** for the evaluation, with the next free epic number, and one story per
 deliverable the GO Package names (from `go-package/brd.md` requirements, grouped into stories; without a GO Package,
 one story per in-scope item of `executive-brief.md`):

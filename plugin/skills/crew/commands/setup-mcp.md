@@ -40,6 +40,9 @@ Read `skills/crew/mcp-registry.yaml` and search for the tool name (case-insensit
 
 If the entry has `notes`, show those too.
 
+If the entry has `manual: true` (no `command` or `url`, e.g. `superdesign`), Crew has no install command for it: show the
+`notes` (install it from its own documentation and pin a version; Crew works without it) and stop here.
+
 If not found, go to **Fallback** section.
 
 ### Step 3: Collect Credentials
@@ -93,7 +96,7 @@ npm search @modelcontextprotocol/server-[tool] --json 2>/dev/null | head -20
 ```
 
 2. If a package is found, show it to the user:
-> "Found `[package-name]`: [description]"
+> "Found `[package-name]`: [description] — this is an npm search result, not verified by Crew; check its publisher before installing."
 > "Install this MCP? [Yes / No]"
 
 3. If confirmed, build the stdio command:
@@ -124,15 +127,14 @@ Available MCP Servers:
 | notion       | http      | oauth  | Fetch pages and databases            |
 | linear       | http      | oauth  | Fetch issues, projects, cycles       |
 | github       | http      | oauth  | Fetch issues, PRs, project boards    |
-| google-drive | stdio     | oauth  | Fetch Google Docs, Sheets            |
-| slack        | http      | oauth  | Fetch context from channels/threads  |
-| trello       | stdio     | env    | Fetch boards, lists, cards           |
-| superdesign  | stdio     | —      | Generate hi-fi UI screens (Phase 2.25)|
+| superdesign  | manual    | —      | Optional: hi-fi UI screens (Phase 2.25); install it yourself |
 
 Usage: /crew setup-mcp [tool-name]
 ```
 
 Note: Jira and Confluence share the same Atlassian Rovo MCP server — configuring one gives access to both.
+Other tools (Google Drive, Slack, Trello, …) are not in the registry; use the fallback below, and check any package it
+finds before installing it.
 
 ---
 

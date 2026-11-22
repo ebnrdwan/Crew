@@ -80,10 +80,10 @@ Picked profile becomes the pass/fail oracle for Step 7's re-measurement.
 ## Step 1 — Profile + budget gates (existing patterns)
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   --feature-description "performance: {target}"
 
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type performance_optimizer \
   --feature-id {run_id} \
   --phase 4 \

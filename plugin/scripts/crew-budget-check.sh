@@ -82,6 +82,13 @@ mkdir -p "$CHECKPOINT_DIR"
 # ── Run all logic in python (yaml parsing + datetime) ─────────
 export OP_TYPE OP_COST_OVERRIDE FEATURE_ID PHASE NEXT_STEP CONFIG USAGE_STATE CHECKPOINT_DIR CREW_ROOT
 
+# PyYAML is optional: without it (or without python3) skip this step instead of failing.
+if ! command -v python3 >/dev/null 2>&1 || ! python3 -c 'import yaml' >/dev/null 2>&1; then
+  echo "crew-budget-check.sh: python3 with PyYAML is not available (install it with: python3 -m pip install pyyaml); skipping the budget check." >&2
+  echo '{"status":"skipped","reason":"python3 with PyYAML not available"}'
+  exit 0
+fi
+
 python3 - <<'PYEOF'
 import os, sys, json, yaml, datetime, hashlib
 

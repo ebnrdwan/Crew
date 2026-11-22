@@ -112,9 +112,12 @@ Set `status_option_id = ""` to skip the field set in the script.
 
 ### Fill the card body skeleton
 
-Read `{plugin_root}/skills/crew/references/card-skeletons.md`. Locate the section matching `card_type`.
+Read `{crew_root}/skills/crew/references/card-skeletons.md`. Locate the section matching `card_type`.
 
-Fill placeholders:
+Fill placeholders. Roadmap paths follow the canonical schema (`{crew_root}/skills/crew/schemas/roadmap-schema.yaml`):
+`roadmap.epics[].stories[]`. Below, **story** is the story in `roadmap.epics[].stories[]` whose `id` is the card's
+`feature_id`, and **epic** is the epic that owns it. Fields marked *(extra)* are not in the schema; use them when the
+roadmap has them, else write `–`.
 
 | Placeholder | Source |
 |---|---|
@@ -122,14 +125,14 @@ Fill placeholders:
 | `{phase_label}` | `current-phase.yaml` (e.g., "PHASE 3 BUILD") |
 | `{logical_status}` | from Step 1 |
 | `{YYYY-MM-DD HH:MM}` | now |
-| `{scope_summary}` | `roadmap.yaml#features[id].description` |
-| `{in_scope_items}` / `{out_of_scope_items}` | `roadmap.yaml#features[id].scope` |
-| `{acceptance_criteria}` | `roadmap.yaml#features[id].acceptance_criteria` (markdown checklist) |
-| `{pages_list}` | `roadmap.yaml#features[id].pages` |
-| `{endpoints_list}` | `roadmap.yaml#features[id].endpoints` |
+| `{scope_summary}` | story `description` (`roadmap.epics[].stories[].description`) |
+| `{in_scope_items}` / `{out_of_scope_items}` | in/out-of-scope lines of the story `description`, if it has them; the epic `scope` (`backend` / `frontend` / `mobile` / `both` / `unknown`) names the area |
+| `{acceptance_criteria}` | story `acceptance_criteria[]` as a markdown checklist: `- [x]` when `met: true`, else `- [ ]`, then `text` |
+| `{pages_list}` | story `pages` *(extra)*, else the routes named in the story `description` |
+| `{endpoints_list}` | story `endpoints` *(extra)*, else the endpoints named in the story `description` or in `docs/api-contract.md` |
 | `{api_contract_url}` | constructed from repo URL + `docs/api-contract.md` |
-| `{conditions}` | `roadmap.yaml#features[id].source.conditions` (only if origin = gang and verdict = CONDITIONAL-GO) |
-| `{source_origin}` | `roadmap.yaml#features[id].source.origin` (manual / gang / gaps) |
+| `{conditions}` | epic `source.conditions` (only if `source.origin` = gang and `source.verdict` = CONDITIONAL-GO) |
+| `{source_origin}` | epic `source.origin` (manual / gang / gaps); `manual` when the epic has no `source` block |
 | `{gang_link_line}` | only when source.origin = gang; format: `**Gang origin:** [\`{slug}\`]({gang_url}) · verdict {verdict_badge} · imported via gang-bridge` |
 | `{phase_N_check}` | from `current-feature.yaml#phase_status[N]`: `⏳ Pending` / `🟡 In progress` / `✅ Done` / `⏭ Skipped` |
 
@@ -137,11 +140,11 @@ Fill placeholders:
 
 | Placeholder | Source |
 |---|---|
-| `{epic_name}` | `roadmap.yaml#epics[].name` for the epic that owns this story |
-| `{sprint_label}` | `roadmap.yaml#epics[].sprint` (or sprint name from a separate sprint table if your project uses one) |
-| `{points}` | `roadmap.yaml#stories[id].points` (or `–` if not estimated) |
-| `{priority}` | `roadmap.yaml#stories[id].priority` (P1 / P2 / P3) |
-| `{parent_story_id}` | `roadmap.yaml#stories[id].parent_story` (or `–` for top-level stories) |
+| `{epic_name}` | epic `name` (`roadmap.epics[].name`) |
+| `{sprint_label}` | `name` of the sprint in `roadmap.phases[].sprints[]` whose `stories` list holds the story `id` (or `–`) |
+| `{points}` | story `points` *(extra)*, or `–` if not estimated |
+| `{priority}` | story `priority` mapped to the board's P-scale: `Critical` / `High` → P1, `Medium` → P2, `Low` → P3 |
+| `{parent_story_id}` | story `parent_story` *(extra)*, or `–` for top-level stories |
 | `{tasks_checklist}` | from `current-feature.yaml#tasks[]` — see format below |
 
 **Tasks checklist format**:
@@ -164,7 +167,14 @@ Example:
 
 Phase status defaults: phases before current phase = `✅ Done`, current phase = `🟡 In progress`, future phases = `⏳ Pending`.
 
-Write the filled body to `/tmp/crew-card-{feature_id}.md`.
+Write the filled body to a private temporary file made with `mktemp` (not a fixed `/tmp` name, which another user or
+process could pre-create or read), and remove it after the sync:
+
+```bash
+BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/crew-card.XXXXXX")
+trap 'rm -f "$BODY_FILE"' EXIT
+# write the filled card body into "$BODY_FILE"
+```
 
 ### Compose the title
 
@@ -179,9 +189,9 @@ Examples:
 ### Run the sync script
 
 ```bash
-bash {plugin_root}/scripts/github-project-sync.sh create \
+bash {crew_root}/scripts/github-project-sync.sh create \
   --title             "$TITLE" \
-  --body-file         /tmp/crew-card-{feature_id}.md \
+  --body-file         "$BODY_FILE" \
   --project-number    {board.project_number} \
   --project-node-id   {board.project_node_id} \
   --owner             {board.owner} \
@@ -231,7 +241,7 @@ features:
 ## Step 4b — Mode: update-status
 
 ```bash
-bash {plugin_root}/scripts/github-project-sync.sh update-status \
+bash {crew_root}/scripts/github-project-sync.sh update-status \
   --project-node-id   {board.project_node_id} \
   --item-id           {cached.item_id} \
   --status-field-id   {board.status_field_id} \
@@ -288,7 +298,7 @@ If `github.projects[]` is empty:
 3. For each selected board, run:
 
    ```bash
-   bash {plugin_root}/scripts/github-project-fields.sh \
+   bash {crew_root}/scripts/github-project-fields.sh \
      --project-number {N} \
      --owner {owner}
    ```

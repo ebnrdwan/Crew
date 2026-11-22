@@ -11,7 +11,7 @@ Drive a feature from discovery through deployment with integrated product analys
 ## Prerequisites
 - `.crew/current-phase.yaml` must exist (run `/crew init` or `/crew onboard` first)
 - `.crew/roadmap.yaml` must exist
-- Crew MCP configured (for C4 diagrams, blast radius) — optional but recommended
+- An architecture-modelling MCP (C4 diagrams, blast radius) — optional, not shipped with Crew; without it pm-architect draws Mermaid diagrams by hand
 - No feature currently in progress (`.crew/current-feature.yaml` should not exist or have status `complete`)
 
 ## Design Context (Impeccable Integration)
@@ -116,13 +116,12 @@ AskUserQuestion({
    })
    ```
 
-4. **Crew MCP?**
+4. **Architecture MCP? (optional)**
    ```
-   Check: Search for crew MCP tools
-   If not found → WARN:
-     "Crew MCP not connected. Architecture diagrams will use text/Mermaid fallback.
-      For C4 diagrams and blast radius: /crew setup-mcp crew"
-   Ask: "Continue without Crew MCP? [Yes / Setup first]"
+   Check: Search for architecture-modelling MCP tools (e.g. getBlastRadius, getDiagramVisualData)
+   If not found → INFO (do not block):
+     "No architecture MCP connected. pm-architect will draw the architecture by hand
+      (text + Mermaid) and work out blast radius from the code."
    ```
 
 All checks passed → proceed to Step 0.6.
@@ -136,13 +135,13 @@ Before any heavy dispatch, ensure we know the user's knowledge level for each te
 **Run detection:**
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   --feature-description "{feature_name + description from Step 1, if known}"
 ```
 
 (In drive, Step 1 hasn't run yet, so pass an empty `--feature-description` here. After Step 1, re-run to detect any tech mentioned in the feature description; only ask about *new* techs that weren't already detected from project files.)
 
-Read the JSON output:
+Read the JSON output (if it is `{"status":"skipped"}` — no python3/PyYAML — skip profiling and continue):
 
 - **`new_techs[]`** — for each, dispatch `AskUserQuestion` using the matching entry from `prompts[]` (header / question / 4 options). After the user picks, call `crew-profile-set.sh --tech {tech} --level {answer.lower()} --context "feature: {feature_id}"`.
 - **`cached_techs{}`** — already known; skip the question, use the cached level.
@@ -226,11 +225,16 @@ GO_PKG="$GANG_DIR/go-package"
 
 if [[ -f "$GO_PKG/brd.md" ]]; then
   GO_PKG_FOUND=true
-  GANG_VERDICT=$(yq -r '.advise.verdict' "$GANG_DIR/state.json")  # GO | CONDITIONAL-GO | NO-GO
 else
   GO_PKG_FOUND=false
 fi
 ```
+
+When the package is found, set `GANG_VERDICT` (`GO`, `CONDITIONAL-GO` or `NO-GO`) by reading
+`$GANG_DIR/executive-brief.md` exactly as `commands/gang-import.md` Step 2 says: `state.json` has no verdict field;
+the verdict is in the brief's verdict section. For a split verdict (part CONDITIONAL-GO, part NO-GO) treat it as
+`CONDITIONAL-GO` for the parts that are GO or CONDITIONAL-GO and tell the user which part is excluded. If the brief is
+missing or the verdict cannot be read, ask the user instead of guessing.
 
 #### 1.5b — Branch on detection result
 
@@ -259,7 +263,7 @@ Dispatch Crew's actual Phase 1 agents in sequence (not pm-architect — pm-archi
 
 1. **product-strategist** — produces `.crew/features/{feature_id}/vision.md` with: target persona, problem statement, success KPIs, non-goals.
 
-2. **feature-planner** — reads vision.md + project context, produces a roadmap entry under `.crew/roadmap.yaml#features[{feature_id}]` with: epic, sprint assignment, acceptance criteria stub, story breakdown if scope spans multiple stories.
+2. **feature-planner** — reads vision.md + project context, adds the work to `.crew/roadmap.yaml` in the canonical shape (`roadmap.epics[].stories[]`, schema `{crew_root}/skills/crew/schemas/roadmap-schema.yaml`): an epic (`id`, `name`, `scope`) or an existing one, with one story per deliverable (`id`, `title`, `priority`, `status`, `assigned`, `description`, `acceptance_criteria[]` of `text` + `met`, `subtasks[]`), and the story IDs added to a sprint in `roadmap.phases[].sprints[].stories`. The story whose `id` is `{feature_id}` (or the first one, when there are several) is the one drive builds.
 
 After both complete, the feature has a proper plan but **drive's later Phase 1 (Discovery via pm-architect) is still skipped** — vision + plan from Crew Phase 1 is sufficient context to enter Phase 2 (Architecture). Set:
 
@@ -345,7 +349,7 @@ AskUserQuestion({
 
 1. Run `/crew gang-import {feature_id}`. The `gang-bridge` agent:
    - Copies the GO Package artifacts into `.crew/features/{feature_id}/` per the [overlap & handoff contract](../references/overlap-handoff-contract.md)
-   - Sets `roadmap.yaml#features[id].source.origin = "gang"` and copies CONDITIONAL-GO conditions into `source.conditions` (these gate Phase 3 implementation)
+   - Adds an epic to `roadmap.epics[]` with its stories, sets the epic's `source.origin = "gang"` and copies CONDITIONAL-GO conditions into the epic's `source.conditions` (these gate Phase 3 implementation), as `commands/gang-import.md` Step 4 shows
    - Marks BRD, architecture, API contract as `imported` (drive will not regenerate them)
 
 2. Set state:
@@ -671,7 +675,7 @@ Tasks:
 1. Define Functional Requirements (FR-IDs with user stories, acceptance criteria)
 2. Define Non-Functional Requirements (all 8 categories)
 3. Design solution architecture:
-   - If Crew MCP available: Create C4 diagrams, run blast radius analysis
+   - If an architecture MCP is available: Create C4 diagrams, run blast radius analysis
    - If not: Create text descriptions with Mermaid diagrams
 4. Identify API contracts needed
 
@@ -999,7 +1003,7 @@ If the user selects "Pause", set `drive_phase: paused_for_spec` and exit. Do not
 Before dispatching either engineer, run:
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type ui_engineer_full_feature \
   --feature-id {feature_id} \
   --phase 3 \
@@ -1010,7 +1014,7 @@ Then again before api-engineer with `--op-type api_engineer_full_feature --next-
 
 **Branch on script exit code:**
 
-- **Exit 0 (`status: ok`)** → proceed normally
+- **Exit 0 (`status: ok`, or `status: skipped` when python3/PyYAML is missing — the budget is not tracked)** → proceed normally
 - **Exit 1 (`status: warn`)** → proceed but tell the user "approaching budget ceiling — consider lighter dispatch mode if available." Continue.
 - **Exit 2 (`status: stop`)** → the script has already written a checkpoint. Read the JSON output's `instructions_for_caller` field. **Call `mcp__scheduled-tasks__create_scheduled_task`** with the supplied `prompt` (`/crew resume {id}`) and `schedule` (the ISO timestamp). Then print to user:
   ```
@@ -1022,7 +1026,10 @@ Then again before api-engineer with `--op-type api_engineer_full_feature --next-
 
   Manual resume anytime with: /crew resume
   ```
-  **Exit drive cleanly.** Do NOT proceed with the dispatch. Drive will resume from the same `next_step` when the scheduled task fires.
+  If the scheduled-tasks tool is not available (it is an optional MCP, not shipped with Crew), skip the call and
+  replace the "Resume scheduled" line with `Resume manually: run /crew resume {checkpoint_id} after {schedule_at}`.
+
+  **Exit drive cleanly.** Do NOT proceed with the dispatch. Drive will resume from the same `next_step` when the scheduled task fires (or when the user runs `/crew resume`).
 
 ---
 
@@ -1073,7 +1080,7 @@ Use CSS variable tokens from index.css. Dark theme only.
 **Post-dispatch: log token usage** for each completed engineer:
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-log.sh \
+bash {crew_root}/scripts/crew-budget-log.sh \
   --op-type ui_engineer_full_feature \
   --tokens {your_best_estimate_of_actual_tokens_consumed} \
   --feature-id {feature_id} \
@@ -1230,11 +1237,13 @@ Report: docs/gap-reports/{date}-{name}-gap-report.md
 
 ### Completion
 
-1. **Merge feature branch:**
+1. **Land the feature branch** — ask (AskUserQuestion in Claude Code, a plain question in GitHub Copilot):
    ```
-   Ready to merge feature/{kebab-name} to main?
-   [Yes / Keep branch open]
+   How should feature/{kebab-name} land?
+   [Open a pull request (recommended) / Merge locally into main / Keep branch open]
    ```
+   Follow `workflow.md` ("Git safety" and "Completing a Feature"): pushing, merging into main and deleting branches each
+   need their own yes; prefer `gh pr create` over pushing main.
 
 2. **Update roadmap:** Set all feature stories to `status: done`, mark acceptance criteria as `met: true`
 

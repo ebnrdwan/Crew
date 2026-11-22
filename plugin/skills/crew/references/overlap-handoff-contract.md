@@ -23,11 +23,11 @@ The contract below tells `gang-bridge` exactly what to copy, what to translate, 
 | # | Artifact | Gang producer | Gang output path | Crew producer (default) | Crew output path |
 |---|---|---|---|---|---|
 | 1 | **BRD / requirements** | Deliverables Writer | `.gang/features/<slug>/go-package/brd.md` | `feature-planner` + `pm-architect` | `.crew/features/<slug>/brd.md` |
-| 2 | **Architecture / ADR** | Solutions Architect | `.gang/features/<slug>/go-package/architecture.md` | `pm-architect` | `.crew/features/<slug>/architecture.md` |
+| 2 | **Architecture / ADR** | Solutions Architect | `.gang/features/<slug>/go-package/technical-architecture.md` | `pm-architect` | `.crew/features/<slug>/architecture.md` |
 | 3 | **API contracts** | Deliverables Writer | `.gang/features/<slug>/go-package/api-contracts.md` | `api-contract-architect` | `docs/api-contract.md` |
 | 4 | **Personas + journeys** | UX Researcher | `.gang/features/<slug>/ux/personas.md`, `journeys.md` | `ux-designer` | `.crew/features/<slug>/personas.md`, `journeys.md` |
 | 5 | **Design tokens / wireframes** | UX Researcher | `.gang/features/<slug>/ux/design-tokens.yaml`, `wireframes.md` | `ux-designer` + `dsl-generator` | `design-artifacts/styled-dsl.yaml` |
-| 6 | **Risk register / project charter** | Finance Analyst + Deliverables Writer | `.gang/features/<slug>/go-package/risk-register.md`, `charter.md` | (covered in `pm-architect` BRD) | `.crew/features/<slug>/charter.md` |
+| 6 | **Risk register / project charter** | Finance Analyst + Deliverables Writer | `.gang/features/<slug>/go-package/risk-register.md`, `project-charter.md` | (covered in `pm-architect` BRD) | `.crew/features/<slug>/project-charter.md` |
 
 ---
 
@@ -62,9 +62,12 @@ The default state per zone depends on the **Gang verdict + card type**:
 ## What `gang-bridge` actually does
 
 ```
-1. Read   .gang/features/<slug>/state.json
-2. Verify state.advise.verdict ∈ {GO, CONDITIONAL-GO}
-3. Read   .gang/features/<slug>/state.json#card_type
+1. Read   .gang/features/<slug>/state.json   ("advise" must be in stages_completed)
+2. Read the verdict from .gang/features/<slug>/executive-brief.md exactly as
+   commands/gang-import.md Step 2 does (state.json has no verdict field; a split
+   verdict imports only the GO / CONDITIONAL-GO part). Continue only for GO or
+   CONDITIONAL-GO.
+3. Read   .gang/features/<slug>/state.json#github_push.card_type (ask the user if absent)
 4. Look up the row in the table above
 5. For each zone:
      a. If Gang artifact exists:

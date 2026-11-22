@@ -10,18 +10,39 @@ Crew manages the full software development lifecycle through structured phases, 
 ## Plugin files and project files
 
 `.crew/` in the **project** holds the project's state (`roadmap.yaml`, `current-phase.yaml`, `current-feature.yaml`,
-`project-context.md`, feature folders). The **reference files ship with the plugin** and are not copied into projects:
-the phase rules, the schemas, `workflow.md`, `instructions.md` and `base-dsl-structure.yaml`.
+`project-context.md`, feature folders) and `instructions.md`, the session rules that `/crew init` and `/crew onboard`
+copy from the plugin's template `{crew_root}/.crew/instructions.md`. In Claude Code, Crew's SessionStart hook prints the
+**project's** `.crew/instructions.md` only (`cat .crew/instructions.md 2>/dev/null || true`); a project without that file
+gets nothing injected. The other **reference files ship with the plugin** and are not copied into projects: the phase
+rules, the schemas, `workflow.md` and `base-dsl-structure.yaml`.
 
 Wherever a command, phase or agent names one of these as `.crew/phases/<file>`, `.crew/schemas/<file>`,
 `.crew/workflow.md`, `.crew/instructions.md` or `.crew/base-dsl-structure.yaml`, read it like this:
 1. the project's own copy at that path, if it exists (a team may override a file);
-2. otherwise the plugin's copy under `{crew_root}/.crew/` (phase files are also in `{crew_root}/skills/crew/phases/`).
+2. otherwise the plugin's copy:
+
+| Named as | Plugin copy |
+|---|---|
+| `.crew/phases/<file>` | `{crew_root}/skills/crew/phases/<file>` |
+| `.crew/schemas/<file>` | `{crew_root}/skills/crew/schemas/<file>` |
+| `.crew/workflow.md` | `{crew_root}/skills/crew/workflow.md` |
+| `.crew/instructions.md` | `{crew_root}/.crew/instructions.md` (template) |
+| `.crew/base-dsl-structure.yaml` | `{crew_root}/.crew/base-dsl-structure.yaml` |
+
+`phase_file` / `git_workflow` values in `current-phase.yaml` (e.g. `phases/phase-1-strategy.md`, `workflow.md`) resolve
+the same way.
 
 `{crew_root}` is the Crew plugin folder: `${CLAUDE_PLUGIN_ROOT}` when set (Claude Code); otherwise two folders up from
 this skill's folder; otherwise the first of
 `find ~/.claude/plugins/cache ~/.copilot/installed-plugins -path '*/skills/crew/SKILL.md' 2>/dev/null`, three levels up
 (GitHub Copilot does not set `${CLAUDE_PLUGIN_ROOT}`; `find` works the same in bash and zsh).
+
+## Dispatching Crew's agents
+
+In Claude Code, plugin agents are named `crew:<agent>` (for example `crew:product-strategist`, `crew:ui-engineer`).
+Wherever a command, phase or reference dispatches an agent by its bare name (`subagent_type: "product-strategist"`),
+use `crew:<agent>`; fall back to the bare name if that is what the client lists (GitHub Copilot, or a local install).
+Use `general-purpose` only when no specialised Crew agent fits the task.
 
 ## Usage
 ```

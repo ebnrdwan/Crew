@@ -60,6 +60,10 @@ All feature development follows `.crew/workflow.md` branching strategy:
 
 ## 🔄 Dynamic Phase Loading
 
+**Where the reference files live:** `.crew/phases/*`, `.crew/schemas/*` and `.crew/workflow.md` below are read from the
+project when it has its own copy, otherwise from the Crew plugin (`skills/crew/phases/`, `skills/crew/schemas/`,
+`skills/crew/workflow.md`; see "Plugin files and project files" in the crew skill). Projects do not need copies.
+
 **Current Phase Detection:**
 ```yaml
 # Read .crew/current-phase.yaml to determine active phase
@@ -96,7 +100,7 @@ fi
 - **Prototype exception**: When building HTML prototypes/screens in `design-artifacts/`, static mock data is expected and correct.
 
 ### 🎨 SuperDesign MCP (Phase 2.25)
-- **MCP SETUP**: Projects using Phase 2.25 require the SuperDesign MCP server: `npx -y github:AZidan/superdesign-mcp-claude-code`
+- **OPTIONAL INTEGRATION**: Phase 2.25 can use a SuperDesign MCP server if you have one. It is not shipped with Crew: install it from its own documentation and pin a version. Crew works without it
 - **OPTIONAL PHASE**: If SuperDesign MCP is unavailable, Phase 2.25 can be skipped (Phase 2 → 2.5 directly)
 - **VISUAL APPROVAL**: Hi-fi screens must be approved before API architecture begins
 
@@ -112,19 +116,22 @@ fi
 - **DEMO REQUIRED**: Working features must be demonstrated before approval
 
 ### 🎯 Agent Selection Rules (ALL Phases)
-- **SPECIALIZED AGENTS ONLY**: Always use sub-agents when possible. Never use `general-purpose` agent
+- **SPECIALIZED AGENTS FIRST**: Always use sub-agents when possible, and prefer a specialised Crew agent. Use `general-purpose` only when no specialised Crew agent fits the task (for example the read-only analysis agents of `/crew onboard`)
+- **AGENT NAMES**: In Claude Code, Crew's agents are named `crew:<agent>` (for example `crew:ui-engineer`); dispatch them by that name, or by the bare name if that is what the client lists
 - **PHASE-APPROPRIATE AGENTS**: Only use agents listed for current phase
 - **MANDATORY FILE NAMING**: Follow exact output naming conventions
 
-### 🗺️ Codemap Navigation (ALL Phases)
-- **CODEMAP FIRST**: Always use `codemap find` before reading full files or using grep/glob
+### 🗺️ Codemap Navigation (optional — only if codemap is installed)
+Codemap is an optional code-index tool; Crew does not ship it and works without it. Check with `command -v codemap`.
+If it is not installed, skip this section and use normal search (grep/glob) with targeted reads.
+- **CODEMAP FIRST**: If codemap is installed, use `codemap find` before reading full files or using grep/glob
 - **TARGETED READS**: Use `codemap show` to get file structure, then read only the relevant line ranges
-- **INIT ON SETUP**: Run `codemap init .` when starting any new project, then `codemap watch . -q &`
+- **INIT ON SETUP**: If codemap is installed, run `codemap init .` when starting any new project, then `codemap watch . -q &`
 - **VALIDATE BEFORE TRUSTING**: Run `codemap validate` before using cached line numbers after compaction
-- **See `.claude/skills/codemap/SKILL.md`** for full usage guide
 
 ### 🔍 Subagent Codebase Navigation
-- When launching **Explore** or **Plan** agents, ALWAYS include this in the prompt: "Use the `/codemap` skill to navigate the codebase structurally. Never read full files — use codemap indexes to find symbols, then read only the specific line ranges you need. At the end of your response, state how many files you read fully vs. how many you navigated via codemap line ranges (e.g. 'Codemap: 5 files via line ranges, 1 full read')."
+- If codemap is installed, when launching **Explore** or **Plan** agents include this in the prompt: "Use codemap to navigate the codebase structurally. Avoid reading full files — use codemap indexes to find symbols, then read only the specific line ranges you need. At the end of your response, state how many files you read fully vs. how many you navigated via codemap line ranges (e.g. 'Codemap: 5 files via line ranges, 1 full read')."
+- Without codemap, ask them to search first and read only the relevant line ranges.
 
 ### ⚡ Development Efficiency (ALL Phases)
 - **AGENT TEAMS**: For Phase 3+ features, launch ui-engineer and api-engineer simultaneously when both have clear, independent scopes from the API contract
@@ -132,7 +139,7 @@ fi
 - **AGENT SCOPING**: Each agent works on ONE feature boundary. Never give an agent a cross-cutting concern
 - **HANDOFF VIA FILES**: Agents communicate through files, not messages. api-engineer produces endpoints; ui-engineer consumes docs/api-contract.md and styled-dsl.yaml
 - **CONFLICT PREVENTION**: Only ONE agent may modify a given file. If two agents need the same file, sequence them
-- **TOKEN EFFICIENCY**: Use codemap find + targeted line reads instead of full file scans
+- **TOKEN EFFICIENCY**: Search first (codemap find, if installed; else grep/glob) + targeted line reads instead of full file scans
 - **ONE FEATURE AT A TIME**: Never batch features in Phase 3
 
 ## 🔄 Phase Navigation System
@@ -166,21 +173,21 @@ For projects without `.crew/current-phase.yaml`:
 
 ## 🚀 Getting Started
 
-**On Every New Session (ALWAYS do this first):**
+**On Every New Session (only if codemap is installed):**
 ```bash
-# Start codemap watch if not already running
-pgrep -f "codemap watch" > /dev/null || codemap watch . -q &
+# Start codemap watch if codemap is installed and not already running
+command -v codemap >/dev/null && { pgrep -f "codemap watch" > /dev/null || codemap watch . -q & }
 ```
 
 **Normal Operation (.crew/current-phase.yaml exists):**
-1. Start codemap watch (above)
+1. Start codemap watch (above, if installed)
 2. Load current phase from `.crew/current-phase.yaml`
 3. Load detailed instructions from `.crew/phases/phase-{current}.md`
 4. Follow phase-specific execution steps
 5. Complete approval gates before proceeding to next phase
 
 **Project Setup (.crew/current-phase.yaml missing):**
-1. Start codemap watch (above)
+1. Start codemap watch (above, if installed)
 2. Load setup system from `.crew/phases/phase-setup.md`
 3. Auto-detect phase from project state or start Phase 1
 4. Create `.crew/current-phase.yaml` and continue with normal operation

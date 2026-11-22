@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.6.0] — 2026-11-22
+
+### Changed
+- The SessionStart hook injects only the project's own `.crew/instructions.md`; `/crew init` and `/crew onboard` copy the template into the project (never overwriting one). Projects that never ran Crew get nothing injected.
+- Pushes, merges into main and branch deletions ask first; finishing a feature offers a PR. Crew stages exact paths, never `git add .`.
+- Superdesign and codemap are optional integrations (install from their own docs, pinned); no hardcoded installs.
+- `/crew deploy` runs the project's `scripts/deploy_checklist.sh` when present, otherwise the checklist inline.
+- Duplicate phase, workflow and schema copies under `plugin/.crew/` removed; the skill folder is the one source.
+
+### Fixed (from review)
+- `{plugin_root}` was never defined: every script path now uses `{crew_root}`.
+- `/crew drive` and the overlap contract read the Gang verdict from `executive-brief.md` (not `state.json`), without `yq`; Gang file names match what Gang writes (`project-charter.md`, `technical-architecture.md`).
+- `drive.md`, `push.md` and `hierarchy-mapping.md` use `roadmap.epics[].stories[]`.
+- The budget and profile scripts skip with a warning when python3 or PyYAML is missing.
+- Removed example credentials from another project, unverified MCP registry entries, and a fixed `/tmp` file name (now `mktemp`).
+- Optional MCP servers (scheduled tasks, Chrome, an architecture MCP) have fallbacks; agent dispatch uses `crew:<agent>`.
+
 ## [0.5.4] — 2026-11-22
 
 ### Fixed (from review)

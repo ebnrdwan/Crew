@@ -62,6 +62,13 @@ done
 PROFILE="$CREW_ROOT/profile.yaml"
 export CREW_ROOT PROFILE TECH LEVEL_LOWER CONTEXT
 
+# PyYAML is optional: without it (or without python3) skip this step instead of failing.
+if ! command -v python3 >/dev/null 2>&1 || ! python3 -c 'import yaml' >/dev/null 2>&1; then
+  echo "crew-profile-set.sh: python3 with PyYAML is not available (install it with: python3 -m pip install pyyaml); skipping the profile set." >&2
+  echo '{"status":"skipped","reason":"python3 with PyYAML not available"}'
+  exit 0
+fi
+
 python3 - <<'PYEOF'
 import os, yaml, json, datetime
 

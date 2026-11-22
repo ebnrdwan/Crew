@@ -72,7 +72,7 @@ mkdir -p maestro/acceptance/helpers
 
 **Step 3b: Write reusable login sub-flows (if they don't exist yet)**
 
-Check your agent memory for project credentials. Create login helpers like:
+Credentials come from the environment or CI secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `TENANT_EMAIL`, `TENANT_PASSWORD`), never from files in the repo or from agent memory. If they are not set, stop and ask the user to set them. Create login helpers like:
 
 `maestro/acceptance/helpers/admin-login.yaml`:
 ```yaml
@@ -123,8 +123,8 @@ Each flow tests one acceptance criterion:
 url: ${APP_URL}
 env:
   APP_URL: http://localhost:3001
-  ADMIN_EMAIL: admin@aegis.ai
-  ADMIN_PASSWORD: "Admin12345!@"
+  ADMIN_EMAIL: ${ADMIN_EMAIL}        # set from the environment / CI secrets, never written here
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD}  # set from the environment / CI secrets, never written here
 ---
 # Login as admin
 - runFlow: helpers/admin-login.yaml
@@ -141,6 +141,8 @@ env:
 - assertVisible: "Rejected"
 - takeScreenshot: "e18-f8-ac-2-three-tabs"
 ```
+
+Pass the credentials at run time, e.g. `maestro test -e ADMIN_EMAIL="$ADMIN_EMAIL" -e ADMIN_PASSWORD="$ADMIN_PASSWORD" maestro/acceptance/`. Never commit real values.
 
 **Maestro Web Commands Reference:**
 ```
@@ -259,7 +261,7 @@ Before finalizing:
 3. **Test as a user would** through Maestro — not by reading code or curling endpoints.
 4. **Document everything**. Screenshots, Maestro output, exact steps.
 5. **Never mark ACCEPTED if Maestro tests couldn't run**. Report BLOCKED instead.
-6. **Use the `/codemap` skill** only when you need to understand implementation details for debugging a failed test.
+6. **Use codemap (if installed; else grep/glob)** only when you need to understand implementation details for debugging a failed test.
 
 ## Update your agent memory
 

@@ -32,11 +32,12 @@ When **any** tech the current feature touches is at level `low` or `none`, Crew:
 This is what runs automatically inside `/crew drive` and `/crew feature` early steps. It can also be invoked directly when a user wants to refresh detection.
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   [--feature-description "build a fastapi service"]
 ```
 
-The script outputs JSON with:
+If python3 with PyYAML is not available, the script prints a warning to stderr and `{"status":"skipped", ...}` on
+stdout and exits 0: skip profiling (no questions, no plain-English mode) and carry on. Otherwise it outputs JSON with:
 
 - `detected_techs` — everything detected in the project + feature description
 - `new_techs` — detected techs NOT yet in the profile (need asking)
@@ -59,7 +60,7 @@ After all prompts are answered, the profile is fully populated for the current f
 ## Subcommand: set
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-set.sh \
+bash {crew_root}/scripts/crew-profile-set.sh \
   --tech python \
   --level intermediate \
   --context "feature: user-auth"

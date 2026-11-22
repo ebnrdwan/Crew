@@ -68,14 +68,14 @@ investigation:
 ## Step 1 — Profile + budget check (existing patterns)
 
 ```bash
-bash {plugin_root}/scripts/crew-profile-check.sh \
+bash {crew_root}/scripts/crew-profile-check.sh \
   --feature-description "investigate: {topic}"
 ```
 
 Ask about new techs that surface in the topic (e.g., investigating Safari → ask about safari/webkit knowledge level).
 
 ```bash
-bash {plugin_root}/scripts/crew-budget-check.sh \
+bash {crew_root}/scripts/crew-budget-check.sh \
   --op-type deep_dispatch \
   --feature-id {spike_id} \
   --phase 4 \

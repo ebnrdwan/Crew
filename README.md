@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Claude_Code-Plugin-EA580C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDJMMyA3djEwbDkgNSA5LTVWN2wtOS01eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" alt="Claude Code Plugin">
-  <img src="https://img.shields.io/badge/version-0.5.1-B45309?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.6.0-B45309?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/agents-20_specialised-0F766E?style=for-the-badge" alt="Agents">
   <img src="https://img.shields.io/badge/phases-6-1D4ED8?style=for-the-badge" alt="Phases">
   <img src="https://img.shields.io/badge/license-MIT-4338CA?style=for-the-badge" alt="License">
@@ -37,6 +37,39 @@ claude plugin install crew
 # Update to latest version
 claude plugin marketplace update crew-marketplace
 ```
+
+---
+
+## Dependencies
+
+**Required:** Claude Code or GitHub Copilot with plugin support, `git`, and `bash`.
+
+**Optional tools:**
+
+| Tool | Used by | Without it |
+|---|---|---|
+| `gh` CLI, authenticated with `project` and `repo` scopes (`gh auth login --scopes project,repo`) | `/crew push`, card auto-updates, opening pull requests | No GitHub Projects cards; land branches by hand |
+| `python3` with PyYAML (`python3 -m pip install pyyaml`) | usage budget (`crew-budget-*.sh`) and knowledge profile (`crew-profile-*.sh`) scripts | The scripts print a warning to stderr and exit 0 (`{"status":"skipped"}`): no budget tracking, no profile questions |
+| codemap (install from its own docs, pin a version) | faster code navigation in agents and phases | Agents search with grep/glob and read only the relevant lines |
+| Maestro CLI | `pm-maestro-reviewer` acceptance tests | Acceptance checks are manual |
+
+**MCP servers Crew can use (optional, not shipped with Crew):**
+
+| MCP server | Used by | Without it |
+|---|---|---|
+| scheduled-tasks | usage budget: schedules `/crew resume` after the rate-limit window | Crew writes the checkpoint and tells you to run `/crew resume {id}` yourself |
+| Claude in Chrome **or** Chrome DevTools MCP | `/crew gaps` (gap-finder accepts either) | `/crew gaps` stops and asks you to connect one |
+| Chrome DevTools MCP | `/crew performance` runtime metrics (Lighthouse, traces) | `/crew performance` falls back to static analysis |
+| An architecture-modelling MCP (C4 diagrams, blast radius) | `pm-architect` in `/crew drive` | pm-architect draws the architecture by hand (text + Mermaid) and works out blast radius from the code |
+| SuperDesign MCP (install from its own docs, pin a version) | Phase 2.25 hi-fi screens | Phase 2.25 is skipped (Phase 2 -> 2.5) |
+| Jira / Confluence, Notion, Linear, GitHub | `/crew onboard` context import, via `/crew setup-mcp` (see `plugin/skills/crew/mcp-registry.yaml`) | Paste the context or describe it in the conversation |
+
+**Session hook (Claude Code):** Crew's SessionStart hook prints the project's own `.crew/instructions.md` and nothing
+else. `/crew init` and `/crew onboard` copy that file from the plugin's template, so Crew's rules are injected only in
+projects that use Crew.
+
+**Git safety:** Crew asks before pushing, merging into `main`, or deleting branches, prefers opening a pull request over
+pushing `main`, and stages exact paths (never `git add .`).
 
 ---
 
@@ -81,8 +114,8 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew feature [name]` | Add a feature, create branches, assign agents |
 | `/crew setup-mcp [tool]` | Connect external tools (Jira, Notion, Linear, GitHub, …) |
 | `/crew drive [name]` | End-to-end product-led feature dev (pm-architect → build → QA → audit) |
-| `/crew deploy [flags]` | Pre-deployment checklist with auto-remediation |
-| `/crew gaps [url]` | UI gap audit + auto-fix pipeline |
+| `/crew deploy [flags]` | Pre-deployment checklist with auto-remediation (runs the project's `scripts/deploy_checklist.sh` if it has one, else the checklist inline; can scaffold the script) |
+| `/crew gaps [url]` | UI gap audit + auto-fix pipeline (needs Claude in Chrome or Chrome DevTools MCP) |
 | `/crew features [filters]` | Roadmap dashboard with status, pages, acceptance progress |
 | `/crew gang-import <slug>` | Import a Gang GO Package as a Crew feature |
 | `/crew gang-escalate <id>` | Send a stalled Crew feature back to Gang for re-scoring |
@@ -91,7 +124,7 @@ Each phase has explicit completion criteria and requires user approval before ad
 | `/crew profile [check\|set\|list]` | Manage user knowledge profile per tech (one-time per tech, cached) |
 | `/crew investigate [topic]` | Hypothesis-driven, time-boxed investigation (creates a spike card) |
 | `/crew fix [issue]` | Reproduce → locate → fix → verify a known bug (creates a bug card) |
-| `/crew performance [target]` | Measure → recommend → optimise → re-measure (Chrome DevTools MCP + numeric IMPACT.md) |
+| `/crew performance [target]` | Measure → recommend → optimise → re-measure (Chrome DevTools MCP if connected, else static analysis; numeric IMPACT.md) |
 
 ---
 
@@ -184,7 +217,7 @@ Full design rationale and worked examples: [`plugin/skills/crew/references/hiera
 Heavy phases (parallel agent dispatches) burn tokens fast. Crew estimates each upcoming op against your configured budget; at **98% session usage** (configurable) it stops cleanly:
 
 1. Saves a checkpoint with the exact next step that was about to run
-2. Schedules `/crew resume {id}` to fire after the rate-limit window resets + 10min buffer
+2. Schedules `/crew resume {id}` to fire after the rate-limit window resets + 10min buffer (with the optional scheduled-tasks MCP; otherwise it tells you to run `/crew resume {id}` yourself)
 3. Exits gracefully — no half-built features
 
 When the scheduled task fires, `/crew resume` verifies the window rolled over and continues exactly where it stopped.

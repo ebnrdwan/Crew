@@ -27,8 +27,8 @@ Read `.crew/current-phase.yaml` to determine `project_type` and select appropria
 
 ## 🚀 Execution Steps
 
-### Pre-Review: Codebase Overview with Codemap
-Before any agent starts reviewing, get the lay of the land:
+### Pre-Review: Codebase Overview (Codemap, if installed)
+Before any agent starts reviewing, get the lay of the land (codemap commands only if it is installed; otherwise grep/glob):
 ```bash
 # Codebase overview — size, languages, coverage
 codemap stats
@@ -37,7 +37,7 @@ codemap stats
 codemap show src/
 codemap show backend/src/
 ```
-All review agents should use `codemap find` to trace dependencies and `codemap show` to navigate files efficiently instead of reading entire files.
+If codemap is installed, all review agents should use `codemap find` to trace dependencies and `codemap show` to navigate files efficiently instead of reading entire files.
 
 ### Parallel Quality Assessment
 All agents work simultaneously for comprehensive review:

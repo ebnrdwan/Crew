@@ -25,7 +25,10 @@ Triggered by `/crew gang-import <slug>`.
 
 2. **Verify push-readiness**:
    - `"advise"` MUST be in `stages_completed` — else suggest `/gang advise`
-   - `verdict` MUST be `GO` or `CONDITIONAL-GO` — refuse to import a `NO-GO`
+   - The verdict MUST be `GO` or `CONDITIONAL-GO` — refuse to import a `NO-GO`. Read it from
+     **`executive-brief.md`** in the evaluation folder, as `commands/gang-import.md` Step 2 describes:
+     `state.json` has no verdict field. For a split verdict, import only the GO / CONDITIONAL-GO part and say which
+     part. If the brief is missing or the verdict cannot be read, ask the user
 
 3. **Read GO Package** (if `"deliver"` complete):
    - `go-package/brd.md` → epic description + acceptance criteria
@@ -41,7 +44,7 @@ Triggered by `/crew gang-import <slug>`.
    - `context-brief.md` for problem statement
 
 5. **Build the Crew feature entry**:
-   - Use the schema in `plugin/skills/crew/commands/gang-import.md` Step 4
+   - Use the schema in the Crew skill's `commands/gang-import.md` Step 4 (`{crew_root}/skills/crew/commands/gang-import.md`)
    - Pull `size` and `priority` from `state.json.github_push.fields_applied` if present
    - Verbatim-copy CONDITIONAL-GO conditions into `source.conditions` — these gate phase-3
 

@@ -136,22 +136,21 @@ echo "6. Enhancement"
 - **Ambiguous keywords**: Ask user to clarify
 - **Multiple high scores**: Choose earliest phase (safer)
 
-## 🗺️ Codemap Initialization
+## 🗺️ Codemap Initialization (optional)
 
-When setting up any project, initialize Codemap for token-efficient navigation:
+Codemap is an optional code-index tool. Crew does not ship it and works without it. If you use codemap, install it from
+its own documentation and pin a version; then, when setting up a project:
 
 ```bash
-# Install codemap (if not available)
-pip install git+https://github.com/AZidan/codemap.git
-
-# Initialize index for the project
-codemap init .
-
-# Start watch mode for live index updates
-codemap watch . -q &
+# Only if codemap is installed
+if command -v codemap >/dev/null; then
+  codemap init .            # Initialize index for the project
+  codemap watch . -q &      # Start watch mode for live index updates
+fi
 ```
 
-This enables all agents to use `codemap find` and `codemap show` instead of scanning full files, reducing token consumption by 60-80%.
+With codemap, agents can use `codemap find` and `codemap show` instead of scanning full files. Without it, they search
+with grep/glob and read only the relevant line ranges.
 
 For existing projects with code already in place, run `codemap stats` after init to verify the index covers the codebase.
 

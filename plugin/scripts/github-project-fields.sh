@@ -16,7 +16,7 @@
 # Usage:
 #   ./github-project-fields.sh \
 #     --project-number 5 \
-#     [--owner ebnrdwan]   (default: auto-detect)
+#     [--owner <owner>]   (default: auto-detect)
 #
 # Exit codes:
 #   0  success

@@ -25,6 +25,19 @@ user-auth (feature branch)
 
 ---
 
+## Git safety (applies to every step below)
+
+- **Ask before every push, merge into `main`/`develop`, or branch deletion** — ask the user first (AskUserQuestion in Claude Code, a plain question in GitHub Copilot), name the exact
+  branch and remote, and wait for a yes. One yes covers one action, not the rest of the feature.
+- **Prefer a pull request over pushing to `main`**: when a feature is done, offer to open a PR
+  (`gh pr create --base main --head [feature-branch]`) instead of merging and pushing `main` yourself.
+- **Stage exact paths** (`git add path/to/file ...`), never `git add .` or `git add -A`: the working tree may hold files
+  that are not part of the change.
+- Deleting branches is optional housekeeping: only offer it after the merge or PR is done, and never delete a remote
+  branch without a yes.
+
+---
+
 ## Starting a New Feature
 
 ```bash
@@ -32,7 +45,7 @@ user-auth (feature branch)
 git checkout main  # or develop
 git pull origin main
 git checkout -b [feature-branch]
-git push -u origin [feature-branch]
+git push -u origin [feature-branch]   # only after the user says yes to publishing the branch
 ```
 
 ---
@@ -44,7 +57,7 @@ git push -u origin [feature-branch]
 git checkout [feature-branch]
 git pull origin [feature-branch]
 git checkout -b [feature]/[task-name]
-git push -u origin [feature]/[task-name]
+git push -u origin [feature]/[task-name]   # only after the user says yes
 ```
 
 ---
@@ -74,10 +87,11 @@ npm run build && npm run dev
 - Check responsiveness if applicable
 - Verify dark mode/themes work correctly
 
-### Step 4: Commit and push
+### Step 4: Commit, then ask before pushing
 ```bash
-git add .
+git add path/to/changed-file another/changed-file   # exact paths of the files this subtask changed
 git commit -m "feat: [description of changes]"
+# Ask the user before pushing; push only after a yes:
 git push -u origin [feature]/[task-number]-[subtask-name]
 ```
 
@@ -93,13 +107,15 @@ git push -u origin [feature]/[task-number]-[subtask-name]
 git checkout [feature]/[task-name]
 git pull origin [feature]/[task-name]
 git merge [feature]/[task-number]-[subtask-name]
+# Ask before pushing the task branch; push only after a yes:
 git push origin [feature]/[task-name]
 ```
 
-### Step 7: Clean up subtask branch
+### Step 7: Clean up subtask branch (optional - ask first)
+Ask the user whether to delete the subtask branch. Only on a yes:
 ```bash
 git branch -d [feature]/[task-number]-[subtask-name]
-git push origin --delete [feature]/[task-number]-[subtask-name]
+git push origin --delete [feature]/[task-number]-[subtask-name]   # separate yes for the remote branch
 ```
 
 ### Step 8: Update tracking documentation
@@ -144,9 +160,10 @@ After ALL subtasks in a task are complete and approved:
 git checkout [feature-branch]
 git pull origin [feature-branch]
 git merge [feature]/[task-name]
+# Ask before pushing; push only after a yes:
 git push origin [feature-branch]
 
-# Clean up task branch
+# Clean up task branch - optional, only after the user says yes:
 git branch -d [feature]/[task-name]
 git push origin --delete [feature]/[task-name]
 ```
@@ -160,16 +177,26 @@ Then:
 
 ## Completing a Feature
 
-After ALL tasks in a feature are complete and approved:
+After ALL tasks in a feature are complete and approved, ask the user how to land it (AskUserQuestion in Claude Code,
+a plain question in GitHub Copilot):
 
+1. **Open a pull request (recommended)** - push the feature branch (after a yes) and open a PR into `main`/`develop`:
+   ```bash
+   git push -u origin [feature-branch]
+   gh pr create --base main --head [feature-branch] --title "feat: [feature]" --body "[summary, test plan]"
+   ```
+2. **Merge locally into `main`** - only when the user explicitly picks it:
+   ```bash
+   git checkout main  # or develop
+   git pull origin main
+   git merge [feature-branch]
+   # Pushing main is a separate question; push only after a yes:
+   git push origin main
+   ```
+3. **Leave it** - keep the feature branch as it is.
+
+Cleaning up the feature branch is optional (it may be kept for reference) and needs its own yes:
 ```bash
-# Merge feature branch to main/develop
-git checkout main  # or develop
-git pull origin main
-git merge [feature-branch]
-git push origin main
-
-# Clean up feature branch (optional - may keep for reference)
 git branch -d [feature-branch]
 git push origin --delete [feature-branch]
 ```
@@ -236,19 +263,21 @@ git checkout -b [feature]/[subtask]
 ### Merge Subtask (after approval)
 ```bash
 git checkout [feature]/[task-name] && \
-git merge [feature]/[subtask] && \
-git push origin [feature]/[task-name] && \
-git branch -d [feature]/[subtask] && \
-git push origin --delete [feature]/[subtask]
+git merge [feature]/[subtask]
+# Then, each only after its own yes from the user:
+#   git push origin [feature]/[task-name]
+#   git branch -d [feature]/[subtask]
+#   git push origin --delete [feature]/[subtask]
 ```
 
 ### Merge Task (after all subtasks complete)
 ```bash
 git checkout [feature-branch] && \
-git merge [feature]/[task-name] && \
-git push origin [feature-branch] && \
-git branch -d [feature]/[task-name] && \
-git push origin --delete [feature]/[task-name]
+git merge [feature]/[task-name]
+# Then, each only after its own yes from the user:
+#   git push origin [feature-branch]
+#   git branch -d [feature]/[task-name]
+#   git push origin --delete [feature]/[task-name]
 ```
 
 ---

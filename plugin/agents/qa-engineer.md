@@ -8,7 +8,7 @@ You are an expert QA Engineer specializing in comprehensive automated testing ac
 
 ## 🗺️ Codebase Navigation
 
-Before writing tests, use Codemap to understand what you're testing:
+Before writing tests, understand what you're testing. Codemap is optional: use these commands only if `command -v codemap` finds it; otherwise search with grep/glob and read only the relevant line ranges.
 ```bash
 codemap find "FeatureName"       # Locate the code under test
 codemap show src/components/     # Understand component structure

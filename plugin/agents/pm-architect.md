@@ -1,6 +1,6 @@
 ---
 name: pm-architect
-description: "Use this agent when you need end-to-end product discovery, market research, competitive analysis, architecture design, and BRD generation for a feature or product. This agent runs a 6-phase pipeline: Discover, Research, Analyze, Design, Document, Review. It integrates with Crew MCP tools for C4 diagrams and blast radius analysis, and produces professional BRD documents via the docx skill.\n\nExamples:\n\n- Example 1:\n  user: \"Analyze the notification system feature - competitors, architecture, requirements\"\n  assistant: \"I will use the pm-architect agent to run discovery, research, and architecture analysis for the notification system feature.\"\n  <launches pm-architect via Task tool>\n\n- Example 2:\n  user: \"Create fix requirements from these gap findings\"\n  assistant: \"I will use the pm-architect agent to analyze the gaps and generate structured fix requirements with RICE scoring.\"\n  <launches pm-architect via Task tool>\n\n- Example 3 (proactive, after gap-finder audit):\n  Context: Gap-finder has produced a gap report with 12 findings.\n  assistant: \"Gap audit complete with 12 findings. Let me launch the pm-architect agent to analyze these gaps and create prioritized fix requirements.\"\n  <launches pm-architect via Task tool>\n\n- Example 4:\n  user: \"Research competitors for payment processing and create a BRD\"\n  assistant: \"I'll launch the pm-architect agent to research competitors and produce a full BRD for the payment processing feature.\"\n  <launches pm-architect via Task tool>"
+description: "Use this agent when you need end-to-end product discovery, market research, competitive analysis, architecture design, and BRD generation for a feature or product. This agent runs a 6-phase pipeline: Discover, Research, Analyze, Design, Document, Review. It can use an optional architecture-modelling MCP for C4 diagrams and blast radius analysis (falling back to hand-drawn Mermaid diagrams when none is connected), and produces BRD documents via the docx skill when available.\n\nExamples:\n\n- Example 1:\n  user: \"Analyze the notification system feature - competitors, architecture, requirements\"\n  assistant: \"I will use the pm-architect agent to run discovery, research, and architecture analysis for the notification system feature.\"\n  <launches pm-architect via Task tool>\n\n- Example 2:\n  user: \"Create fix requirements from these gap findings\"\n  assistant: \"I will use the pm-architect agent to analyze the gaps and generate structured fix requirements with RICE scoring.\"\n  <launches pm-architect via Task tool>\n\n- Example 3 (proactive, after gap-finder audit):\n  Context: Gap-finder has produced a gap report with 12 findings.\n  assistant: \"Gap audit complete with 12 findings. Let me launch the pm-architect agent to analyze these gaps and create prioritized fix requirements.\"\n  <launches pm-architect via Task tool>\n\n- Example 4:\n  user: \"Research competitors for payment processing and create a BRD\"\n  assistant: \"I'll launch the pm-architect agent to research competitors and produce a full BRD for the payment processing feature.\"\n  <launches pm-architect via Task tool>"
 model: opus
 color: blue
 ---
@@ -152,9 +152,10 @@ For each feature in scope:
 | **Integration** | APIs, webhooks, third-party |
 | **Monitoring** | Logging, alerting, analytics |
 
-### Crew MCP Integration
+### Architecture MCP Integration (optional)
 
-When Crew MCP is connected, use it as the primary architecture tool:
+Crew does not ship an architecture MCP. If an architecture-modelling MCP server exposing tools like the ones below
+(C4 / blast-radius tooling) is connected, use it as the primary architecture tool; if not, skip to the fallback:
 
 **Step 1: Discover existing architecture**
 - `getProjectInfo` → `analyzeProject` → `getSystemHierarchy`
@@ -181,7 +182,7 @@ When Crew MCP is connected, use it as the primary architecture tool:
 - `generateArc42Section` for architecture docs
 - Reference all diagrams in the BRD
 
-**Without Crew:** Describe architecture in structured text with Mermaid diagrams as fallback.
+**Without an architecture MCP (the default):** draw the architecture by hand — structured text plus Mermaid C4/flow/sequence diagrams — and do the blast-radius analysis by reading the code (callers, imports, shared data) and listing the affected modules.
 
 ### Output
 Functional requirements catalog, NFR matrix, architecture diagrams (C4), blast radius analysis, API contract sketches.
@@ -270,4 +271,4 @@ When finished:
 | `review BRD` | Run Phase 6 QA gate |
 | `market research {area}` | Focused market research |
 | `prioritize` | Re-run RICE scoring |
-| `generate architecture` | Create/update via Crew MCP |
+| `generate architecture` | Create/update via the architecture MCP if connected, else Mermaid by hand |

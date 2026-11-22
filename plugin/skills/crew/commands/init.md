@@ -28,9 +28,10 @@ Before creating any Crew files:
    - If Yes: `git init`
    - If No: WARN "Crew strongly recommends git. Proceeding without it."
 
-3. After `.crew/` files are created (end of Step 3), make the initial commit:
+3. After the Crew files are created (end of Step 4), ask the user (AskUserQuestion in Claude Code, a plain question in GitHub Copilot) whether to commit
+   them. On a yes, stage only the exact paths Crew created — never `git add .`:
    ```bash
-   git add .crew/
+   git add .crew/current-phase.yaml .crew/instructions.md CLAUDE.md
    git commit -m "chore: initialize crew (Phase 1)"
    ```
 
@@ -115,6 +116,11 @@ feature_status: "ready"
 status: "initialized"
 ```
 
+3. **Copy the session rules into the project:** if `.crew/instructions.md` does not exist, copy the plugin's template
+   `{crew_root}/.crew/instructions.md` to `.crew/instructions.md` (never overwrite an existing one — the team may have edited
+   it). In Claude Code, Crew's SessionStart hook prints this project file at the start of each session, so Crew's rules are
+   loaded only in projects that use Crew; a project without `.crew/instructions.md` gets nothing injected.
+
 ### Step 4: Update Project CLAUDE.md
 
 If `CLAUDE.md` does NOT exist in the project root, create it:
@@ -157,6 +163,7 @@ Crew initialized at Phase 1 (Strategy & Planning).
 
 Created:
   .crew/current-phase.yaml
+  .crew/instructions.md [copied from the plugin / kept the existing one]
   CLAUDE.md [created / updated with Crew section]
 
 Next steps:

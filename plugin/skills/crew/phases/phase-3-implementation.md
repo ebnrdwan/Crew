@@ -30,7 +30,7 @@ If ANY check fails, HALT and fix before proceeding.
 
 #### 0.1 Git Repository
 Run: `git status`
-- NOT initialized → HALT: "Git is required. Run `git init && git add . && git commit -m 'Initial commit'`"
+- NOT initialized → HALT: "Git is required. Run `git init`, then commit the files you want tracked (stage exact paths; Crew never runs `git add .`)."
 - Verify prior phase commits: `git log --oneline | head -5`
 
 #### 0.2 Feature Branch
@@ -53,7 +53,7 @@ can build correct service layers and TypeScript interfaces.
 Check: `design-artifacts/styled-dsl.yaml` exists
 - Missing → HALT: "Complete Phase 2 first."
 
-#### 0.5 Codemap
+#### 0.5 Codemap (optional — skip if `command -v codemap` finds nothing)
 - `.codemap/` missing → `codemap init .`
 - Watcher: `pgrep -f "codemap watch" > /dev/null || codemap watch . -q &`
 
@@ -61,8 +61,8 @@ All checks passed → proceed to Step 3A.
 
 ---
 
-### 🗺️ Pre-Implementation: Codemap Setup
-Before writing any code, ensure Codemap is initialized and running:
+### 🗺️ Pre-Implementation: Codemap Setup (only if codemap is installed)
+If codemap is installed, ensure it is initialized and running before writing any code (without it, use grep/glob and targeted reads):
 ```bash
 # Verify codemap is active (should already be from phase-setup)
 codemap stats
@@ -79,8 +79,8 @@ Each feature follows the branching strategy from `.crew/workflow.md`:
    ```bash
    git checkout main && git pull origin main
    git checkout -b {feature-branch}
-   git push -u origin {feature-branch}
    ```
+   Publish it with `git push -u origin {feature-branch}` only after the user says yes.
 3. Task branches are created from the feature branch per `.crew/workflow.md`
 4. All merges require explicit user approval
 
@@ -123,7 +123,7 @@ ONLY THEN dispatch the agent with: "Work on branch [branch-name]"
 
 ### 🔄 Step 3A: DEVELOPMENT
 
-**Before writing code, agents must:**
+**Before writing code, agents must** (codemap commands only if it is installed; otherwise grep/glob):
 ```bash
 # Check what already exists — avoid duplicating code
 codemap find "[FeatureName]"
@@ -290,8 +290,9 @@ After acceptance testing returns ACCEPTED:
 
 After ALL tasks for a feature are complete:
 1. Wait for explicit user approval
-2. Merge feature branch → main (per `.crew/workflow.md`)
-3. Clean up feature branch
+2. Land the feature branch per `.crew/workflow.md` ("Completing a Feature"): ask whether to open a pull request
+   (recommended) or merge locally into main; pushing and merging into main each need a yes
+3. Clean up the feature branch only if the user says yes
 4. Update `.crew/roadmap.yaml`: feature status → `complete`
 5. Update `.crew/current-phase.yaml`: `current_feature` → `null`
 
