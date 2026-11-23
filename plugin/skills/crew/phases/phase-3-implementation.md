@@ -64,7 +64,7 @@ top-level `epics[].stories[]`, and the epic that owns it. Skip this check when t
 - To clear one, show the user the condition and the evidence offered (a test result, a link, a decision) and ask:
   "Mark this condition as cleared with this evidence? [yes / no]". Only on a yes, set `cleared: true` and `evidence`
   on that entry (and `cleared_by: user`, `cleared_at: <ISO-8601>`), then run this check again.
-- Conditions written as plain strings (imports before 0.6.1) count as not cleared: turn each into
+- Conditions written as plain strings (older imports) count as not cleared: turn each into
   `{text, cleared: false, evidence: null}` first.
 - A condition that cannot be met while the feature must still ship is a strategic decision: offer
   `/crew gang-escalate` instead of clearing it.
