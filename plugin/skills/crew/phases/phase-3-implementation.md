@@ -53,7 +53,23 @@ can build correct service layers and TypeScript interfaces.
 Check: `design-artifacts/styled-dsl.yaml` exists
 - Missing → HALT: "Complete Phase 2 first."
 
-#### 0.5 Codemap (optional — skip if `command -v codemap` finds nothing)
+#### 0.5 Gang conditions (features imported from Gang)
+Find the story being built (its `id` is `feature_id` in `.crew/current-feature.yaml`) in `.crew/roadmap.yaml` under the
+top-level `epics[].stories[]`, and the epic that owns it. Skip this check when that epic has no `source` or its
+`source.origin` is not `gang`.
+- `phase_status["phase-3-implementation"]` is `paused-for-gang-reeval` (an open `/crew gang-escalate`) → HALT:
+  "This epic is waiting for a new Gang verdict. Run `/crew gang-import <slug>` once Gang has re-evaluated it."
+- `source.verdict` is `CONDITIONAL-GO` and any entry in `source.conditions` has `cleared` not `true`, or no
+  `evidence` → HALT and list each open condition with its text. Do not clear any yourself.
+- To clear one, show the user the condition and the evidence offered (a test result, a link, a decision) and ask:
+  "Mark this condition as cleared with this evidence? [yes / no]". Only on a yes, set `cleared: true` and `evidence`
+  on that entry (and `cleared_by: user`, `cleared_at: <ISO-8601>`), then run this check again.
+- Conditions written as plain strings (imports before 0.6.1) count as not cleared: turn each into
+  `{text, cleared: false, evidence: null}` first.
+- A condition that cannot be met while the feature must still ship is a strategic decision: offer
+  `/crew gang-escalate` instead of clearing it.
+
+#### 0.6 Codemap (optional — skip if `command -v codemap` finds nothing)
 - `.codemap/` missing → `codemap init .`
 - Watcher: `pgrep -f "codemap watch" > /dev/null || codemap watch . -q &`
 

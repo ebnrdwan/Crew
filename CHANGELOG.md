@@ -7,6 +7,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.6.1] — 2026-11-23
+
+### Fixed (from review)
+- `.crew/roadmap.yaml` keeps `epics` and `phases` at the top level (the schema's `roadmap` only names the root object):
+  `/crew gang-import` and `/crew gang-escalate` no longer write a `roadmap:` wrapper, and the docs say `epics[]`.
+- Phase 3 pre-flight (step 0.5) halts on an epic imported from Gang while any CONDITIONAL-GO condition is not cleared
+  with evidence the user confirmed, or while a Gang re-evaluation is pending. `/crew drive` runs the same check.
+  Conditions are now `{text, cleared, evidence}`.
+
 ## [0.6.0] — 2026-11-22
 
 ### Changed

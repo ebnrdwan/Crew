@@ -263,7 +263,7 @@ Dispatch Crew's actual Phase 1 agents in sequence (not pm-architect — pm-archi
 
 1. **product-strategist** — produces `.crew/features/{feature_id}/vision.md` with: target persona, problem statement, success KPIs, non-goals.
 
-2. **feature-planner** — reads vision.md + project context, adds the work to `.crew/roadmap.yaml` in the canonical shape (`roadmap.epics[].stories[]`, schema `{crew_root}/skills/crew/schemas/roadmap-schema.yaml`): an epic (`id`, `name`, `scope`) or an existing one, with one story per deliverable (`id`, `title`, `priority`, `status`, `assigned`, `description`, `acceptance_criteria[]` of `text` + `met`, `subtasks[]`), and the story IDs added to a sprint in `roadmap.phases[].sprints[].stories`. The story whose `id` is `{feature_id}` (or the first one, when there are several) is the one drive builds.
+2. **feature-planner** — reads vision.md + project context, adds the work to `.crew/roadmap.yaml` in the canonical shape (`epics[].stories[]`, schema `{crew_root}/skills/crew/schemas/roadmap-schema.yaml`): an epic (`id`, `name`, `scope`) or an existing one, with one story per deliverable (`id`, `title`, `priority`, `status`, `assigned`, `description`, `acceptance_criteria[]` of `text` + `met`, `subtasks[]`), and the story IDs added to a sprint in `phases[].sprints[].stories`. The story whose `id` is `{feature_id}` (or the first one, when there are several) is the one drive builds.
 
 After both complete, the feature has a proper plan but **drive's later Phase 1 (Discovery via pm-architect) is still skipped** — vision + plan from Crew Phase 1 is sufficient context to enter Phase 2 (Architecture). Set:
 
@@ -349,7 +349,7 @@ AskUserQuestion({
 
 1. Run `/crew gang-import {feature_id}`. The `gang-bridge` agent:
    - Copies the GO Package artifacts into `.crew/features/{feature_id}/` per the [overlap & handoff contract](../references/overlap-handoff-contract.md)
-   - Adds an epic to `roadmap.epics[]` with its stories, sets the epic's `source.origin = "gang"` and copies CONDITIONAL-GO conditions into the epic's `source.conditions` (these gate Phase 3 implementation), as `commands/gang-import.md` Step 4 shows
+   - Adds an epic to `epics[]` with its stories, sets the epic's `source.origin = "gang"` and copies CONDITIONAL-GO conditions into the epic's `source.conditions` (each `{text, cleared: false, evidence: null}`; they gate Phase 3 through its pre-flight step 0.5), as `commands/gang-import.md` Step 4 shows
    - Marks BRD, architecture, API contract as `imported` (drive will not regenerate them)
 
 2. Set state:
@@ -1050,9 +1050,9 @@ Read `.crew/current-phase.yaml` to determine `project_type` and select agents:
 | `ui-engineer` | Yes | Yes | No |
 | `api-engineer` | Yes | No | Yes |
 
-**Follow the execution pattern from `.crew/phases/phase-3-implementation.md`:**
+**Follow the execution pattern from `phase-3-implementation.md` (the project's `.crew/phases/` copy if it has one, else `{crew_root}/skills/crew/phases/`):**
 
-1. Run Phase 3 pre-flight validation (git, feature branch, API contract, design artifacts)
+1. Run Phase 3 pre-flight validation (git, feature branch, API contract, design artifacts, and for an epic imported from Gang its CONDITIONAL-GO conditions, step 0.5: halt until each is cleared with the user's confirmed evidence)
 2. Dispatch engineers in parallel (for fullstack)
 3. Each engineer works on their assigned stories
 4. Engineers follow the task-level git workflow from `workflow.md`

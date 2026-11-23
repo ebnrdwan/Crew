@@ -115,7 +115,7 @@ Set `status_option_id = ""` to skip the field set in the script.
 Read `{crew_root}/skills/crew/references/card-skeletons.md`. Locate the section matching `card_type`.
 
 Fill placeholders. Roadmap paths follow the canonical schema (`{crew_root}/skills/crew/schemas/roadmap-schema.yaml`):
-`roadmap.epics[].stories[]`. Below, **story** is the story in `roadmap.epics[].stories[]` whose `id` is the card's
+`epics[].stories[]`. Below, **story** is the story in `epics[].stories[]` whose `id` is the card's
 `feature_id`, and **epic** is the epic that owns it. Fields marked *(extra)* are not in the schema; use them when the
 roadmap has them, else write `–`.
 
@@ -125,7 +125,7 @@ roadmap has them, else write `–`.
 | `{phase_label}` | `current-phase.yaml` (e.g., "PHASE 3 BUILD") |
 | `{logical_status}` | from Step 1 |
 | `{YYYY-MM-DD HH:MM}` | now |
-| `{scope_summary}` | story `description` (`roadmap.epics[].stories[].description`) |
+| `{scope_summary}` | story `description` (`epics[].stories[].description`) |
 | `{in_scope_items}` / `{out_of_scope_items}` | in/out-of-scope lines of the story `description`, if it has them; the epic `scope` (`backend` / `frontend` / `mobile` / `both` / `unknown`) names the area |
 | `{acceptance_criteria}` | story `acceptance_criteria[]` as a markdown checklist: `- [x]` when `met: true`, else `- [ ]`, then `text` |
 | `{pages_list}` | story `pages` *(extra)*, else the routes named in the story `description` |
@@ -140,8 +140,8 @@ roadmap has them, else write `–`.
 
 | Placeholder | Source |
 |---|---|
-| `{epic_name}` | epic `name` (`roadmap.epics[].name`) |
-| `{sprint_label}` | `name` of the sprint in `roadmap.phases[].sprints[]` whose `stories` list holds the story `id` (or `–`) |
+| `{epic_name}` | epic `name` (`epics[].name`) |
+| `{sprint_label}` | `name` of the sprint in `phases[].sprints[]` whose `stories` list holds the story `id` (or `–`) |
 | `{points}` | story `points` *(extra)*, or `–` if not estimated |
 | `{priority}` | story `priority` mapped to the board's P-scale: `Critical` / `High` → P1, `Medium` → P2, `Low` → P3 |
 | `{parent_story_id}` | story `parent_story` *(extra)*, or `–` for top-level stories |

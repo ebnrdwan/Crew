@@ -39,7 +39,7 @@ Crew and Gang are two complementary plugins. Each does one thing well; together 
 | `.gang/features/<slug>/state.json#github_push` | Where the Gang verdict was published (project board) |
 | `.gang/features/<slug>/state.json#crew_import` | (NEW) Set when `/crew gang-import` consumes the evaluation |
 | `.crew/roadmap.yaml` | Crew's master feature backlog |
-| `.crew/roadmap.yaml#roadmap.epics[].source.origin` | Set to `gang` on the epic an import creates |
+| `.crew/roadmap.yaml#epics[].source.origin` | Set to `gang` on the epic an import creates |
 | `.crew/imports.yaml` | Audit log of all Gang→Crew handoffs |
 | `.crew/features/<slug>/` | Crew's per-feature execution artifacts (phase outputs) |
 | `.gang/features/<slug>/escalation-from-crew.md` | (NEW) Set when `/crew gang-escalate` sends a feature back to Gang |
@@ -80,13 +80,13 @@ For small features where a full Gang run is overkill, use `/crew feature` direct
 
 Gang very often returns CONDITIONAL-GO rather than unconditional GO. The conditions are *gating assumptions* — claims the committee couldn't verify before recommending the build.
 
-When Crew imports a CONDITIONAL-GO feature, it copies the conditions verbatim into the imported epic's `source.conditions` (`roadmap.epics[]`). **Crew's `phase-3-implementation` MUST NOT activate until those conditions are validated.**
+When Crew imports a CONDITIONAL-GO feature, it copies the conditions verbatim into the imported epic's `source.conditions` (`epics[]`). **Crew's `phase-3-implementation` MUST NOT activate until those conditions are validated.**
 
-Treat CONDITIONAL-GO conditions like compile errors: they block the build. Each one needs:
-1. A named owner
-2. A validation method (survey, backtest, legal review, etc.)
-3. A pass/fail outcome recorded back in `assumptions.json`
-4. A flip from `unvalidated` → `validated` before phase-3 unlocks
+Treat CONDITIONAL-GO conditions like compile errors: they block the build. Each entry in `source.conditions` is
+`{text, cleared, evidence}` (optionally `owner` and `method`: survey, backtest, legal review, ...). The
+`phase-3-implementation` pre-flight (step 0.5) halts while any entry has `cleared` not `true` or no `evidence`. A
+condition is cleared only when the user confirms its evidence; Crew records `cleared: true`, the evidence,
+`cleared_by: user` and `cleared_at`, and never clears one on its own.
 
 If a condition cannot be validated and the feature must ship anyway, that's a strategic decision — escalate to Gang via `/crew gang-escalate`.
 

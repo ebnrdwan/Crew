@@ -69,49 +69,54 @@ Tell the user the package is partial and recommend running `/gang deliver` first
 
 ### Step 4: Build the epic and its stories
 
-Crew's roadmap is `roadmap.epics[].stories[]` (schema: `{crew_root}/skills/crew/schemas/roadmap-schema.yaml`; there is
-no `features` list). Add **one new epic** for the evaluation, with the next free epic number, and one story per
-deliverable the GO Package names (from `go-package/brd.md` requirements, grouped into stories; without a GO Package,
-one story per in-scope item of `executive-brief.md`):
+`.crew/roadmap.yaml` has `project`, `project_type`, `epics` and `phases` at the top level (schema:
+`{crew_root}/skills/crew/schemas/roadmap-schema.yaml`, where `roadmap` only names that root object: the file has no
+`roadmap:` key and no `features` list). Each epic holds its `stories[]`. Add **one new epic** for the evaluation,
+with the next free epic number, and one story per deliverable the GO Package names (from `go-package/brd.md`
+requirements, grouped into stories; without a GO Package, one story per in-scope item of `executive-brief.md`):
 
 ```yaml
-roadmap:
-  epics:
-    - id: E<next>                       # next free epic number
-      name: <evaluation_name from Gang state.json, prettified>
-      scope: <backend|frontend|mobile|both|unknown>   # the work's true scope
-      source:                           # Gang provenance (extra field, kept with the epic)
-        origin: gang
-        slug: <slug>
-        session_id: <gang session_id>
-        gang_card_url: <state.json.github_push.project_item_url if present>
-        verdict: <GO|CONDITIONAL-GO>    # from executive-brief.md
-        verdict_score: <weighted_average from scored-plans.md>
-        conditions: <list of CONDITIONAL-GO conditions, copied verbatim>
-        kill_switches: <kill switches, copied verbatim>
-        risks: <top 3 risks from the executive brief>
-      stories:
-        - id: S<epic number>-01
-          title: <short title>
-          priority: <Critical|High|Medium|Low>   # from Gang's priority (P1 -> High, P2 -> Medium, P3 -> Low)
-          status: backlog
-          assigned: <agent that will build it, e.g. ui-engineer, api-engineer>
-          description: |
-            <what to build, from the GO Package or executive brief>
-          acceptance_criteria:
-            - text: <criterion from go-package/brd.md, or the executive brief>
-              met: false
-          subtasks: []
+# appended to the existing top-level list in .crew/roadmap.yaml
+epics:
+  - id: E<next>                       # next free epic number
+    name: <evaluation_name from Gang state.json, prettified>
+    scope: <backend|frontend|mobile|both|unknown>   # the work's true scope
+    source:                           # Gang provenance (extra field, kept with the epic)
+      origin: gang
+      slug: <slug>
+      session_id: <gang session_id>
+      gang_card_url: <state.json.github_push.project_item_url if present>
+      verdict: <GO|CONDITIONAL-GO>    # from executive-brief.md
+      verdict_score: <weighted_average from scored-plans.md>
+      conditions:                     # CONDITIONAL-GO only; [] for GO
+        - text: <condition, copied verbatim from the executive brief>
+          cleared: false            # true only once the user confirms the evidence
+          evidence: null            # what proved it: a link, a test result, a decision
+      kill_switches: <kill switches, copied verbatim>
+      risks: <top 3 risks from the executive brief>
+    stories:
+      - id: S<epic number>-01
+        title: <short title>
+        priority: <Critical|High|Medium|Low>   # from Gang's priority (P1 -> High, P2 -> Medium, P3 -> Low)
+        status: backlog
+        assigned: <agent that will build it, e.g. ui-engineer, api-engineer>
+        description: |
+          <what to build, from the GO Package or executive brief>
+        acceptance_criteria:
+          - text: <criterion from go-package/brd.md, or the executive brief>
+            met: false
+        subtasks: []
 ```
 
 Strategy is covered by the Gang evaluation: when the next phase is planned, these stories start at design. While
-`source.verdict` is `CONDITIONAL-GO`, its `conditions` must be cleared before any of the epic's stories enter
-`phase-3-implementation`.
+`source.verdict` is `CONDITIONAL-GO`, every entry in `source.conditions` must have `cleared: true` and its `evidence`
+before any of the epic's stories enter `phase-3-implementation` (its pre-flight step 0.5 checks this). A condition is
+cleared only when the user confirms the evidence; Crew never clears one by itself.
 
 ### Step 5: Append to roadmap & ask for confirmation
 
 Show the user the proposed entry and ask:
-> "Add this epic to `.crew/roadmap.yaml` (under `roadmap.epics`)? [yes / let me edit / cancel]"
+> "Add this epic to `.crew/roadmap.yaml` (appended to the top-level `epics` list)? [yes / let me edit / cancel]"
 
 On `yes` → append; on `let me edit` → write to a temp file, open it for review;
 on `cancel` → exit cleanly.
